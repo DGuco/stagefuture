@@ -11,13 +11,13 @@
 #include "runnable.h"
 #include "thread.h"
 
-class CExecutorService : CExecutor
+class CExecutorService
 {
 public:
     CExecutorService(int maxTask);
     ~CExecutorService();
 private:
-    std::list<CRunnable> m_lTaskList;
+    std::list<CRunnable*> m_lTaskList;
     int m_iMaxTask;
 };
 

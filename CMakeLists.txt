@@ -21,4 +21,3 @@ link_directories(
 
 add_executable(mythread ${SOURCE_FILES})
 target_link_libraries(mythread)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
