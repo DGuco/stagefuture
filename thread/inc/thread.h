@@ -6,14 +6,6 @@
 #include <mutex>
 #include <thread>
 
-#define TRACE_DEBUG		ThreadLogDebug
-#define TRACE_INFO			ThreadLogInfo
-#define TRACE_NOTICE		ThreadLogNotice
-#define TRACE_WARN		ThreadLogWarn
-#define TRACE_ERROR		ThreadLogError
-#define TRACE_FATAL		ThreadLogFatal
-
-
 enum eRunStatus
 {
     RT_INIT = 0,

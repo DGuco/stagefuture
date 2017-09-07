@@ -7,9 +7,11 @@
 //
 
 #include <stdio.h>
-
+#include <iostream>
+using namespace std;
 int main()
 {
+    std::cout << "kkkkk" << std::endl;
     return 0;
     
 }
