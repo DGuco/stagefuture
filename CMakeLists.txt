@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.6)
 project(mythread)
-add_definitions(-D_DEBUG_ -DUSE_LOG4CPP -DUSE_MY_ASSERT)
+add_definitions(-D_DEBUG_)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -pipe -std=c++11")
 set(SOURCE_FILES
         main.cpp
-        thread/inc/thread.h
-        thread/src/thread.cpp
+        concurrent/inc/runnable.h
+        concurrent/inc/executor.h
+        concurrent/inc/thread.h
         concurrent/inc/executor_service.h
+        concurrent/src/thread.cpp
         concurrent/src/executor_service.cpp
+
         )
 
 
@@ -18,4 +21,4 @@ link_directories(
 
 add_executable(mythread ${SOURCE_FILES})
 target_link_libraries(mythread)
-set(EXECUTABgit LE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)

@@ -7,3 +7,14 @@
 //
 
 #include <stdio.h>
+#include "../inc/executor_service.h"
+
+CExecutorService::CExecutorService(int maxTask) : m_iMaxTask(maxTask)
+{
+    m_lTaskList.clear();
+}
+
+CExecutorService::~CExecutorService()
+{
+    
+}
