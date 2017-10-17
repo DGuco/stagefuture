@@ -20,19 +20,19 @@ inline CThreadPool::CThreadPool(size_t threads) :  m_stop(false)
             m_mWorkers[th->get_id()] = th;
         }
     }
-    std::cout << "ThreadPoll size is  " << threads << std::endl;
 }
 
-// the destructor joins all threads
 inline CThreadPool::~CThreadPool()
 {
     {
         std::unique_lock<std::mutex> lock(m_mutex);
+        m_condition.notify_all();
         m_stop = true;
     }
-    m_condition.notify_all();
     for(auto it = m_mWorkers.begin();it != m_mWorkers.end();it++)
+    {
         it->second->join();
+    }
 }
 
 bool CThreadPool::IsThisThreadIn() {
@@ -82,21 +82,20 @@ auto CThreadPool::PushTaskBack(F &&f, Args &&... args)
 
     std::future<return_type> res = task->get_future();
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
         if(m_stop)
             throw std::runtime_error("enqueue on stopped ThreadPool");
         //当前没有任务
         if (IsThisThreadIn() && m_qTasks.size() <= 0)
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            lock.unlock();
             (*task)();
         }else
         {
             m_qTasks.emplace_back([task](){ (*task)(); });
+            m_condition.notify_one();
         }
     }
-
-    m_condition.notify_one();
     return res;
 }
 
@@ -117,18 +116,18 @@ auto CThreadPool::PushTaskFront(F &&f, Args &&... args)
 
     std::future<return_type> res = task->get_future();
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
         if(m_stop)
             throw std::runtime_error("ThreadPool has stopped");
         if (IsThisThreadIn())
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            lock.unlock();
             (*task)();
         }else
         {
             m_qTasks.emplace_front([task](){ (*task)(); });
+            m_condition.notify_one();
         }
-        m_condition.notify_one();
     }
     return res;
 }

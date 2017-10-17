@@ -23,6 +23,10 @@ class CThreadPool{
 public:
     CThreadPool();
     CThreadPool(size_t);
+    CThreadPool(CThreadPool&) = delete;
+    CThreadPool(const CThreadPool&) = delete;
+    CThreadPool& operator=(const CThreadPool&) = delete;
+
     ~CThreadPool();
     //向后添加任务
     template<class F, class... Args>
