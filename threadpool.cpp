@@ -29,9 +29,11 @@ inline CThreadPool::~CThreadPool()
         m_condition.notify_all();
         m_stop = true;
     }
-    for(auto it = m_mWorkers.begin();it != m_mWorkers.end();it++)
+    for(auto it = m_mWorkers.begin();it != m_mWorkers.end();)
     {
         it->second->join();
+        delete it->second;
+        it = m_mWorkers.erase(it);
     }
 }
 
