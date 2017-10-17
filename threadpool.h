@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-using  namespace std;
+using namespace std;
 
 class CThreadPool{
 public:
@@ -43,5 +43,7 @@ private:
     std::condition_variable m_condition;
     bool m_stop;
 };
+
+#include "threadpool.cpp"
 
 #endif /* threadpool_h */
