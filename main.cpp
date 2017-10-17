@@ -6,16 +6,31 @@
 //
 //
 
-#include <stdio.h>
 #include <iostream>
-#include <list>
-//#include "concurrent/inc/executor.h"
-//#include "concurrent/inc/executor_service.h"
+#include <vector>
+#include <chrono>
+#include "threadpool.h"
 
-using namespace std;
 int main()
 {
-    std::cout << "kkkkk" << std::endl;
-    return 0;
     
+    CThreadPool pool(4);
+    std::vector< std::future<int> > results;
+    
+    for(int i = 0; i < 8; ++i) {
+        results.emplace_back(
+                             pool.PushTaskBack([i] {
+            std::cout << "hello " << i << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::cout << "world " << i << std::endl;
+            return i*i;
+        })
+                             );
+    }
+    
+    for(auto && result: results)
+        std::cout << result.get() << ' ';
+    std::cout << std::endl;
+    
+    return 0;
 }
