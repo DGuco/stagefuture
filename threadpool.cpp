@@ -73,61 +73,59 @@ auto CThreadPool::PushTaskBack(F &&f, Args &&... args)
 {
     using return_type = typename std::result_of<F(Args...)>::type;
 
-    auto task = std::make_shared< std::packaged_task<return_type()> >(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+    auto task = std::make_shared<std::packaged_task<return_type()> >(
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...)
     );
 
-    if (task == NULL)
-    {
+    if (task == NULL) {
         throw std::runtime_error("Create task error ");
     }
 
     std::future<return_type> res = task->get_future();
-    {
+
+    //如果在当前线程内，则直接执行
+    if (IsInThisThread()) {
+        (*task)();
+    }
+    else {
         std::unique_lock<std::mutex> lock(m_mutex);
-        if(m_stop)
+        if (m_stop)
             throw std::runtime_error("enqueue on stopped ThreadPool");
-        //当前没有任务
-        if (IsThisThreadIn() && m_qTasks.size() <= 0)
-        {
-            lock.unlock();
-            (*task)();
-        }else
-        {
-            m_qTasks.emplace_back([task](){ (*task)(); });
-            m_condition.notify_one();
-        }
+        m_qTasks.emplace_back([task]()
+                              { (*task)(); });
+        m_condition.notify_one();
     }
     return res;
 }
 
-
+/*
+ * 和函数声明放在统一个源文件中，避免 use of ‘auto...’ before deduction of ‘auto’ .. error
+ */
 template<class F, class... Args>
 auto CThreadPool::PushTaskFront(F &&f, Args &&... args)
 {
     using return_type = typename std::result_of<F(Args...)>::type;
 
-    auto task = std::make_shared< std::packaged_task<return_type()> >(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+    auto task = std::make_shared<std::packaged_task<return_type()> >(
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...)
     );
 
-    if (task == NULL)
-    {
+    if (task == NULL) {
         throw std::runtime_error("Create task error ");
     }
 
     std::future<return_type> res = task->get_future();
-    {
+    //如果在当前线程内，则直接执行
+    if (IsInThisThread()) {
+        (*task)();
+    }
+    else {
         std::unique_lock<std::mutex> lock(m_mutex);
-        if(m_stop)
+        if (m_stop)
             throw std::runtime_error("ThreadPool has stopped");
-        if (IsThisThreadIn())
-        {
-            lock.unlock();
-            (*task)();
-        }else
-        {
-            m_qTasks.emplace_front([task](){ (*task)(); });
+        else {
+            m_qTasks.emplace_front([task]()
+                                   { (*task)(); });
             m_condition.notify_one();
         }
     }
