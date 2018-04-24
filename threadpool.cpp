@@ -55,16 +55,23 @@ void CThreadPool::ThreadFunc()
 {
     while(true)
     {
-        std::function<void()> task;
-        std::unique_lock<std::mutex> lock(this->m_mutex);
-        this->m_condition.wait(lock,
-                               [this]{ return this->m_stop || !this->m_qTasks.empty(); });
-        if(this->m_stop && this->m_qTasks.empty())
-            return;
-        task = std::move(this->m_qTasks.front());
-        this->m_qTasks.pop_front();
-        lock.unlock();
-        task();
+		std::function<void()> task;
+		std::unique_lock<std::mutex> lock(this->m_mutex);
+		this->m_condition.wait(lock,
+							   [this]
+							   { return (this->m_stop || !this->m_qTasks.empty()); });
+		//如果停止线程
+		if (this->m_stop) {
+			return;
+		}
+		//如果唤醒时队列任务为空，则认为是意外唤醒继续阻塞
+		if (this->m_qTasks.empty()) {
+			continue;
+		}
+		task = std::move(this->m_qTasks.front());
+		this->m_qTasks.pop_front();
+		lock.unlock();
+		task();
     }
 }
 
