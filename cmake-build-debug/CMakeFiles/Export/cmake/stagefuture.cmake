@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget Async++)
+foreach(_expectedTarget stagefuture)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -41,20 +41,53 @@ unset(_targetsNotDefined)
 unset(_expectedTargets)
 
 
-# Create imported target Async++
-add_library(Async++ SHARED IMPORTED)
+# Compute the installation prefix relative to this file.
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
 
-set_target_properties(Async++ PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "/home/dguco/workspace/cpp/stagefuture/include"
+# Create imported target stagefuture
+add_library(stagefuture SHARED IMPORTED)
+
+set_target_properties(stagefuture PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
   INTERFACE_LINK_LIBRARIES "Threads::Threads"
 )
 
-# Import target "Async++" for configuration "Debug"
-set_property(TARGET Async++ APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-set_target_properties(Async++ PROPERTIES
-  IMPORTED_LOCATION_DEBUG "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libasync++.so"
-  IMPORTED_SONAME_DEBUG "libasync++.so"
-  )
+if(CMAKE_VERSION VERSION_LESS 2.8.12)
+  message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
+endif()
+
+# Load information for each installed configuration.
+get_filename_component(_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+file(GLOB CONFIG_FILES "${_DIR}/stagefuture-*.cmake")
+foreach(f ${CONFIG_FILES})
+  include(${f})
+endforeach()
+
+# Cleanup temporary variables.
+set(_IMPORT_PREFIX)
+
+# Loop over all imported files and verify that they actually exist
+foreach(target ${_IMPORT_CHECK_TARGETS} )
+  foreach(file ${_IMPORT_CHECK_FILES_FOR_${target}} )
+    if(NOT EXISTS "${file}" )
+      message(FATAL_ERROR "The imported target \"${target}\" references the file
+   \"${file}\"
+but this file does not exist.  Possible reasons include:
+* The file was deleted, renamed, or moved to another location.
+* An install or uninstall procedure did not complete successfully.
+* The installation package was faulty and contained
+   \"${CMAKE_CURRENT_LIST_FILE}\"
+but not all the files it references.
+")
+    endif()
+  endforeach()
+  unset(_IMPORT_CHECK_FILES_FOR_${target})
+endforeach()
+unset(_IMPORT_CHECK_TARGETS)
 
 # This file does not depend on other imported targets which have
 # been exported from the same project but in a separate export set.

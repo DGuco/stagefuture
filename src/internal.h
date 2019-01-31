@@ -31,7 +31,7 @@
 #include <type_traits>
 #include <vector>
 
-#include <async++.h>
+#include <stagefuture.h>
 
 // For posix_memalign/_aligned_malloc
 #ifdef _WIN32

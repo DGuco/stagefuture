@@ -68,18 +68,6 @@ install/strip/fast: preinstall/fast
 	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip/fast
 
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local/fast
-
 # Special rule for the target install
 install: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
@@ -114,10 +102,22 @@ package_source/fast: package_source
 
 .PHONY : package_source/fast
 
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -179,17 +179,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Async++
+# Target rules for targets named stagefuture
 
 # Build rule for target.
-Async++: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 Async++
-.PHONY : Async++
+stagefuture: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 stagefuture
+.PHONY : stagefuture
 
 # fast build rule for target.
-Async++/fast:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/build
-.PHONY : Async++/fast
+stagefuture/fast:
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/build
+.PHONY : stagefuture/fast
 
 src/scheduler.o: src/scheduler.cpp.o
 
@@ -197,7 +197,7 @@ src/scheduler.o: src/scheduler.cpp.o
 
 # target to build an object file
 src/scheduler.cpp.o:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/scheduler.cpp.o
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/scheduler.cpp.o
 .PHONY : src/scheduler.cpp.o
 
 src/scheduler.i: src/scheduler.cpp.i
@@ -206,7 +206,7 @@ src/scheduler.i: src/scheduler.cpp.i
 
 # target to preprocess a source file
 src/scheduler.cpp.i:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/scheduler.cpp.i
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/scheduler.cpp.i
 .PHONY : src/scheduler.cpp.i
 
 src/scheduler.s: src/scheduler.cpp.s
@@ -215,7 +215,7 @@ src/scheduler.s: src/scheduler.cpp.s
 
 # target to generate assembly for a file
 src/scheduler.cpp.s:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/scheduler.cpp.s
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/scheduler.cpp.s
 .PHONY : src/scheduler.cpp.s
 
 src/threadpool_scheduler.o: src/threadpool_scheduler.cpp.o
@@ -224,7 +224,7 @@ src/threadpool_scheduler.o: src/threadpool_scheduler.cpp.o
 
 # target to build an object file
 src/threadpool_scheduler.cpp.o:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/threadpool_scheduler.cpp.o
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o
 .PHONY : src/threadpool_scheduler.cpp.o
 
 src/threadpool_scheduler.i: src/threadpool_scheduler.cpp.i
@@ -233,7 +233,7 @@ src/threadpool_scheduler.i: src/threadpool_scheduler.cpp.i
 
 # target to preprocess a source file
 src/threadpool_scheduler.cpp.i:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/threadpool_scheduler.cpp.i
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.i
 .PHONY : src/threadpool_scheduler.cpp.i
 
 src/threadpool_scheduler.s: src/threadpool_scheduler.cpp.s
@@ -242,7 +242,7 @@ src/threadpool_scheduler.s: src/threadpool_scheduler.cpp.s
 
 # target to generate assembly for a file
 src/threadpool_scheduler.cpp.s:
-	$(MAKE) -f CMakeFiles/Async++.dir/build.make CMakeFiles/Async++.dir/src/threadpool_scheduler.cpp.s
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.s
 .PHONY : src/threadpool_scheduler.cpp.s
 
 # Help Target
@@ -252,11 +252,11 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... install/strip"
-	@echo "... install/local"
 	@echo "... install"
 	@echo "... package"
 	@echo "... package_source"
-	@echo "... Async++"
+	@echo "... install/local"
+	@echo "... stagefuture"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... list_install_components"

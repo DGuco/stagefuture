@@ -1,12 +1,12 @@
 [
 {
   "directory": "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug",
-  "command": "/usr/bin/g++  -DLIBASYNC_BUILD -I/home/dguco/workspace/cpp/stagefuture/include  -g -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -std=c++11 -Wall -Wextra -pedantic -fno-rtti -pthread -o CMakeFiles/Async++.dir/src/scheduler.cpp.o -c /home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp",
+  "command": "/usr/bin/g++  -DLIBASYNC_BUILD -I/home/dguco/workspace/cpp/stagefuture/include  -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -std=c++11 -Wall -Wextra -pedantic -fno-rtti -pthread -o CMakeFiles/stagefuture.dir/src/scheduler.cpp.o -c /home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp",
   "file": "/home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp"
 },
 {
   "directory": "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug",
-  "command": "/usr/bin/g++  -DLIBASYNC_BUILD -I/home/dguco/workspace/cpp/stagefuture/include  -g -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -std=c++11 -Wall -Wextra -pedantic -fno-rtti -pthread -o CMakeFiles/Async++.dir/src/threadpool_scheduler.cpp.o -c /home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp",
+  "command": "/usr/bin/g++  -DLIBASYNC_BUILD -I/home/dguco/workspace/cpp/stagefuture/include  -fPIC -fvisibility=hidden -fvisibility-inlines-hidden   -std=c++11 -Wall -Wextra -pedantic -fno-rtti -pthread -o CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o -c /home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp",
   "file": "/home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp"
 }
 ]

@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <async++.h>
+#include <stagefuture.h>
 #include <gtk/gtk.h>
 #include <iostream>
 #include <chrono>

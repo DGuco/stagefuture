@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
+    set(CMAKE_INSTALL_CONFIG_NAME "")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -38,21 +38,21 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Async++Config.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/stagefutureConfig.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so"
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libasync++.so")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libstagefuture.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libasync++.so")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libstagefuture.so")
     endif()
   endif()
 endif()
@@ -61,45 +61,45 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/Async++.cmake")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/stagefuture.cmake")
     file(DIFFERENT EXPORT_FILE_CHANGED FILES
-         "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/Async++.cmake"
-         "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/Async++.cmake")
+         "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/stagefuture.cmake"
+         "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture.cmake")
     if(EXPORT_FILE_CHANGED)
-      file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/Async++-*.cmake")
+      file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/stagefuture-*.cmake")
       if(OLD_CONFIG_FILES)
-        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/Async++.cmake\" will be replaced.  Removing files [${OLD_CONFIG_FILES}].")
+        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/cmake/stagefuture.cmake\" will be replaced.  Removing files [${OLD_CONFIG_FILES}].")
         file(REMOVE ${OLD_CONFIG_FILES})
       endif()
     endif()
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/Async++.cmake")
-  if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/Async++-debug.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture.cmake")
+  if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^()$")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture-noconfig.cmake")
   endif()
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/include/async++.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/include/stagefuture.h")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/async++" TYPE FILE FILES
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/aligned_alloc.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/cancel.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/continuation_vector.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_for.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_invoke.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_reduce.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/partitioner.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/range.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/ref_count.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/scheduler.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/scheduler_fwd.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/task.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/task_base.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/traits.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/async++/when_all_any.h"
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/stagefuture" TYPE FILE FILES
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/aligned_alloc.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/cancel.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/continuation_vector.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/parallel_for.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/parallel_invoke.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/parallel_reduce.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/partitioner.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/range.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/ref_count.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/scheduler.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/scheduler_fwd.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/task.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/task_base.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/traits.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/when_all_any.h"
     )
 endif()
 
