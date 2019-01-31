@@ -570,4 +570,4 @@ local_task<detail::default_scheduler_type, Func> local_spawn(Func&& f)
 	return {::stagefuture::default_scheduler(), std::forward<Func>(f)};
 }
 
-} // namespace async
+} // namespace stagefuture

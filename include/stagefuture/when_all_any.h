@@ -289,4 +289,4 @@ task<when_any_result<std::tuple<typename std::decay<T>::type...>>> when_any(T&&.
 	return out;
 }
 
-} // namespace async
+} // namespace stagefuture

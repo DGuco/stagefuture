@@ -168,4 +168,4 @@ namespace detail
 typedef std::remove_reference<decltype(::stagefuture::default_scheduler())>::type default_scheduler_type;
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

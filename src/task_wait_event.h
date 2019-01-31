@@ -72,4 +72,4 @@ public:
 };
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

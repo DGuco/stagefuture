@@ -67,4 +67,4 @@ void parallel_invoke(Args&&... args)
 	stagefuture::parallel_invoke(::stagefuture::default_scheduler(), std::forward<Args>(args)...);
 }
 
-} // namespace async
+} // namespace stagefuture

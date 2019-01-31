@@ -106,4 +106,4 @@ Result parallel_reduce(std::initializer_list<T> range, Result init, const Reduce
 	return stagefuture::parallel_reduce(stagefuture::make_range(range.begin(), range.end()), init, reduce);
 }
 
-} // namespace async
+} // namespace stagefuture

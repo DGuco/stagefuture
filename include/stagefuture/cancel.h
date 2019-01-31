@@ -65,4 +65,4 @@ inline void interruption_point(const cancellation_token& token)
 		LIBASYNC_THROW(task_canceled());
 }
 
-} // namespace async
+} // namespace stagefuture

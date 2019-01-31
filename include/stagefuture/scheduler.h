@@ -172,4 +172,4 @@ inline void inline_scheduler_impl::schedule(task_run_handle t)
 }
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

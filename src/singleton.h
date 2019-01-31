@@ -70,4 +70,4 @@ template<typename T> singleton<T> singleton<T>::instance;
 #endif
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

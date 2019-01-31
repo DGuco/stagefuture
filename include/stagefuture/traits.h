@@ -135,4 +135,4 @@ struct continuation_traits {
 };
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

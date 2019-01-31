@@ -193,4 +193,4 @@ detail::auto_partitioner_impl<decltype(std::declval<std::initializer_list<T>>().
 	return stagefuture::auto_partitioner(stagefuture::make_range(range.begin(), range.end()));
 }
 
-} // namespace async
+} // namespace stagefuture

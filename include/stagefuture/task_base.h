@@ -581,4 +581,4 @@ struct continuation_exec_func<Sched, Parent, Result, Func, true, true>: private 
 };
 
 } // namespace detail
-} // namespace async
+} // namespace stagefuture

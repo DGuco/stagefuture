@@ -179,4 +179,4 @@ int_range<typename std::common_type<T, U>::type> irange(T begin, U end)
 	return {begin, end};
 }
 
-} // namespace async
+} // namespace stagefuture

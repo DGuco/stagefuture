@@ -74,4 +74,4 @@ void parallel_for(std::initializer_list<T> range, const Func& func)
 	stagefuture::parallel_for(stagefuture::make_range(range.begin(), range.end()), func);
 }
 
-} // namespace async
+} // namespace stagefuture
