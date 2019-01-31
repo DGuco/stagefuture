@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Async++"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="package">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 package"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="package_source">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 package_source"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Async++">
+				<Option output="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libasync++.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dguco/workspace/cpp/stagefuture/include"/>
+					<Add directory="/usr/include/c++/6"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/6"/>
+					<Add directory="/usr/include/c++/6/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/6/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 Async++"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Async++/fast">
+				<Option output="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libasync++.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dguco/workspace/cpp/stagefuture/include"/>
+					<Add directory="/usr/include/c++/6"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/6"/>
+					<Add directory="/usr/include/c++/6/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/6/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 Async++/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/dguco/workspace/cpp/stagefuture/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/aligned_alloc.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/cancel.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/continuation_vector.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_for.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_invoke.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/parallel_reduce.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/partitioner.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/range.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/ref_count.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/scheduler.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/scheduler_fwd.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/task.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/task_base.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/traits.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/include/async++/when_all_any.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/fifo_queue.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/internal.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/singleton.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/task_wait_event.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/src/work_steal_queue.h">
+			<Option target="Async++"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/Async++Config.cmake.in">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/dguco/workspace/cpp/stagefuture/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
