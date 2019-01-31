@@ -29,13 +29,13 @@ class gtk_scheduler_impl {
 	// Get the task from the void* and execute it in the UI thread
 	static gboolean callback(void* p)
 	{
-		async::task_run_handle::from_void_ptr(p).run();
+		stagefuture::task_run_handle::from_void_ptr(p).run();
 		return FALSE;
 	}
 
 public:
 	// Convert a task to void* and send it to the gtk main loop
-	void schedule(async::task_run_handle t)
+	void schedule(stagefuture::task_run_handle t)
 	{
 		g_idle_add(callback, t.to_void_ptr());
 	}
@@ -53,7 +53,7 @@ gtk_scheduler_impl& gtk_scheduler()
 // result of a task is already available, so you can still call .get() on a
 // completed task. This is completely optional and can be omitted if you don't
 // need it.
-void gtk_wait_handler(async::task_wait_handle)
+void gtk_wait_handler(stagefuture::task_wait_handle)
 {
 	std::cerr << "Error: Blocking wait in UI thread" << std::endl;
 	std::abort();
@@ -69,7 +69,7 @@ void label_update_thread(GtkLabel *label)
 		counter++;
 
 		// Update the label contents in the UI thread
-		async::spawn(gtk_scheduler(), [label, counter] {
+		stagefuture::spawn(gtk_scheduler(), [label, counter] {
 			gtk_label_set_text(label, std::to_string(counter).c_str());
 		});
 	}
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 	gtk_init(&argc, &argv);
 
 	// Set wait handler on GTK thread to disallow waiting for tasks
-	async::set_thread_wait_handler(gtk_wait_handler);
+	stagefuture::set_thread_wait_handler(gtk_wait_handler);
 
 	// Create a window with a label
 	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

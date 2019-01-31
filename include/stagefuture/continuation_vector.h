@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Compress the flags in the low bits of the pointer if the structures are
@@ -119,7 +119,7 @@ public:
 	continuation_vector()
 	{
 		// Workaround for a bug in certain versions of clang with libc++
-		// error: no viable conversion from 'async::detail::compressed_ptr<3, true>' to '_Atomic(async::detail::compressed_ptr<3, true>)'
+		// error: no viable conversion from 'stagefuture::detail::compressed_ptr<3, true>' to '_Atomic(stagefuture::detail::compressed_ptr<3, true>)'
 		std::atomic_init(&atomic_data, internal_data(nullptr, 0));
 	}
 

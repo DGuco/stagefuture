@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Range type representing a pair of iterators
 template<typename Iter>

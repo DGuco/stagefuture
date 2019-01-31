@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Exception thrown when an event_task is destroyed without setting a value
 struct LIBASYNC_EXPORT_EXCEPTION abandoned_event_task {};
@@ -42,8 +42,8 @@ class basic_task {
 	typedef task_result<internal_result> internal_task_type;
 
 	// Friend access
-	friend async::task<Result>;
-	friend async::shared_task<Result>;
+	friend stagefuture::task<Result>;
+	friend stagefuture::shared_task<Result>;
 	template<typename T>
 	friend typename T::internal_task_type* get_internal_task(const T& t);
 	template<typename T>
@@ -138,7 +138,7 @@ class basic_event {
 	typedef detail::task_result<internal_result> internal_task_type;
 
 	// Friend access
-	friend async::event_task<Result>;
+	friend stagefuture::event_task<Result>;
 	template<typename T>
 	friend typename T::internal_task_type* get_internal_task(const T& t);
 
@@ -265,7 +265,7 @@ public:
 	template<typename Func>
 	typename detail::continuation_traits<task, Func>::task_type then(Func&& f)
 	{
-		return then(::async::default_scheduler(), std::forward<Func>(f));
+		return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
 	}
 
 	// Create a shared_task from this task
@@ -310,7 +310,7 @@ public:
 	template<typename Func>
 	typename detail::continuation_traits<shared_task, Func>::task_type then(Func&& f) const
 	{
-		return then(::async::default_scheduler(), std::forward<Func>(f));
+		return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
 	}
 };
 
@@ -496,9 +496,9 @@ task<typename detail::remove_task<typename std::result_of<typename std::decay<Fu
 	return out;
 }
 template<typename Func>
-decltype(async::spawn(::async::default_scheduler(), std::declval<Func>())) spawn(Func&& f)
+decltype(stagefuture::spawn(::stagefuture::default_scheduler(), std::declval<Func>())) spawn(Func&& f)
 {
-	return async::spawn(::async::default_scheduler(), std::forward<Func>(f));
+	return stagefuture::spawn(::stagefuture::default_scheduler(), std::forward<Func>(f));
 }
 
 // Create a completed task containing a value
@@ -567,7 +567,7 @@ __attribute__((warn_unused_result))
 #endif
 local_task<detail::default_scheduler_type, Func> local_spawn(Func&& f)
 {
-	return {::async::default_scheduler(), std::forward<Func>(f)};
+	return {::stagefuture::default_scheduler(), std::forward<Func>(f)};
 }
 
 } // namespace async

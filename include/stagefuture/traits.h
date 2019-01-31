@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Pseudo-void type: it takes up no space but can be moved and copied

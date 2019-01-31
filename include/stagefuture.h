@@ -121,7 +121,7 @@
 #endif
 
 // Some forward declarations
-namespace async {
+namespace stagefuture {
 
 template<typename Result>
 class task;
@@ -133,21 +133,21 @@ class event_task;
 } // namespace async
 
 // Include sub-headers
-#include "async++/traits.h"
-#include "async++/aligned_alloc.h"
-#include "async++/ref_count.h"
-#include "async++/scheduler_fwd.h"
-#include "async++/continuation_vector.h"
-#include "async++/task_base.h"
-#include "async++/scheduler.h"
-#include "async++/task.h"
-#include "async++/when_all_any.h"
-#include "async++/cancel.h"
-#include "async++/range.h"
-#include "async++/partitioner.h"
-#include "async++/parallel_invoke.h"
-#include "async++/parallel_for.h"
-#include "async++/parallel_reduce.h"
+#include "stagefuture/traits.h"
+#include "stagefuture/aligned_alloc.h"
+#include "stagefuture/ref_count.h"
+#include "stagefuture/scheduler_fwd.h"
+#include "stagefuture/continuation_vector.h"
+#include "stagefuture/task_base.h"
+#include "stagefuture/scheduler.h"
+#include "stagefuture/task.h"
+#include "stagefuture/when_all_any.h"
+#include "stagefuture/cancel.h"
+#include "stagefuture/range.h"
+#include "stagefuture/partitioner.h"
+#include "stagefuture/parallel_invoke.h"
+#include "stagefuture/parallel_for.h"
+#include "stagefuture/parallel_reduce.h"
 
 #ifndef LIBASYNC_STATIC
 #if defined(__GNUC__) && !defined(_WIN32)

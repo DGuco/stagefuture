@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Improved version of std::hardware_concurrency:
 // - It never returns 0, 1 is returned instead.

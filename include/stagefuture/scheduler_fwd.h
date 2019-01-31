@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Forward declarations
 class task_run_handle;
@@ -30,7 +30,7 @@ class threadpool_scheduler;
 
 // Scheduler interface:
 // A scheduler is any type that implements this function:
-// void schedule(async::task_run_handle t);
+// void schedule(stagefuture::task_run_handle t);
 // This function should result in t.run() being called at some future point.
 
 namespace detail {
@@ -94,7 +94,7 @@ LIBASYNC_EXPORT threadpool_scheduler& default_threadpool_scheduler();
 // Default scheduler that is used when one isn't specified. This defaults to
 // default_threadpool_scheduler(), but can be overriden by defining
 // LIBASYNC_CUSTOM_DEFAULT_SCHEDULER before including async++.h. Keep in mind
-// that in that case async::default_scheduler should be declared before
+// that in that case stagefuture::default_scheduler should be declared before
 // including async++.h.
 #ifndef LIBASYNC_CUSTOM_DEFAULT_SCHEDULER
 inline threadpool_scheduler& default_scheduler()
@@ -151,7 +151,7 @@ public:
 namespace detail {
 
 // Work-around for Intel compiler handling decltype poorly in function returns
-typedef std::remove_reference<decltype(::async::default_scheduler())>::type default_scheduler_type;
+typedef std::remove_reference<decltype(::stagefuture::default_scheduler())>::type default_scheduler_type;
 
 } // namespace detail
 } // namespace async

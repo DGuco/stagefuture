@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Exception thrown by cancel_current_task()
 struct LIBASYNC_EXPORT_EXCEPTION task_canceled {};

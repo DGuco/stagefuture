@@ -25,7 +25,7 @@
 # include <pthread.h>
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 void* aligned_alloc(std::size_t size, std::size_t align)

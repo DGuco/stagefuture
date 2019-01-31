@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Queue which holds tasks in FIFO order. Note that this queue is not

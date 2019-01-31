@@ -30,7 +30,7 @@
 # include <pthread.h>
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Per-thread data, aligned to cachelines to avoid false sharing

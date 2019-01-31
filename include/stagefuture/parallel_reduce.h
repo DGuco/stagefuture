@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Default map function which simply passes its parameter through unmodified
@@ -49,7 +49,7 @@ Result internal_parallel_map_reduce(Sched& sched, Partitioner partitioner, Resul
 	}
 
 	// Run the function over each half in parallel
-	auto&& t = async::local_spawn(sched, [&sched, &subpart, init, &map, &reduce] {
+	auto&& t = stagefuture::local_spawn(sched, [&sched, &subpart, init, &map, &reduce] {
 		return detail::internal_parallel_map_reduce(sched, std::move(subpart), init, map, reduce);
 	});
 	Result out = detail::internal_parallel_map_reduce(sched, std::move(partitioner), init, map, reduce);
@@ -62,48 +62,48 @@ Result internal_parallel_map_reduce(Sched& sched, Partitioner partitioner, Resul
 template<typename Sched, typename Range, typename Result, typename MapFunc, typename ReduceFunc>
 Result parallel_map_reduce(Sched& sched, Range&& range, Result init, const MapFunc& map, const ReduceFunc& reduce)
 {
-	return detail::internal_parallel_map_reduce(sched, async::to_partitioner(std::forward<Range>(range)), init, map, reduce);
+	return detail::internal_parallel_map_reduce(sched, stagefuture::to_partitioner(std::forward<Range>(range)), init, map, reduce);
 }
 
 // Overload with default scheduler
 template<typename Range, typename Result, typename MapFunc, typename ReduceFunc>
 Result parallel_map_reduce(Range&& range, Result init, const MapFunc& map, const ReduceFunc& reduce)
 {
-	return async::parallel_map_reduce(::async::default_scheduler(), range, init, map, reduce);
+	return stagefuture::parallel_map_reduce(::stagefuture::default_scheduler(), range, init, map, reduce);
 }
 
 // Overloads with std::initializer_list
 template<typename Sched, typename T, typename Result, typename MapFunc, typename ReduceFunc>
 Result parallel_map_reduce(Sched& sched, std::initializer_list<T> range, Result init, const MapFunc& map, const ReduceFunc& reduce)
 {
-	return async::parallel_map_reduce(sched, async::make_range(range.begin(), range.end()), init, map, reduce);
+	return stagefuture::parallel_map_reduce(sched, stagefuture::make_range(range.begin(), range.end()), init, map, reduce);
 }
 template<typename T, typename Result, typename MapFunc, typename ReduceFunc>
 Result parallel_map_reduce(std::initializer_list<T> range, Result init, const MapFunc& map, const ReduceFunc& reduce)
 {
-	return async::parallel_map_reduce(async::make_range(range.begin(), range.end()), init, map, reduce);
+	return stagefuture::parallel_map_reduce(stagefuture::make_range(range.begin(), range.end()), init, map, reduce);
 }
 
 // Variant with identity map operation
 template<typename Sched, typename Range, typename Result, typename ReduceFunc>
 Result parallel_reduce(Sched& sched, Range&& range, Result init, const ReduceFunc& reduce)
 {
-	return async::parallel_map_reduce(sched, range, init, detail::default_map(), reduce);
+	return stagefuture::parallel_map_reduce(sched, range, init, detail::default_map(), reduce);
 }
 template<typename Range, typename Result, typename ReduceFunc>
 Result parallel_reduce(Range&& range, Result init, const ReduceFunc& reduce)
 {
-	return async::parallel_reduce(::async::default_scheduler(), range, init, reduce);
+	return stagefuture::parallel_reduce(::stagefuture::default_scheduler(), range, init, reduce);
 }
 template<typename Sched, typename T, typename Result, typename ReduceFunc>
 Result parallel_reduce(Sched& sched, std::initializer_list<T> range, Result init, const ReduceFunc& reduce)
 {
-	return async::parallel_reduce(sched, async::make_range(range.begin(), range.end()), init, reduce);
+	return stagefuture::parallel_reduce(sched, stagefuture::make_range(range.begin(), range.end()), init, reduce);
 }
 template<typename T, typename Result, typename ReduceFunc>
 Result parallel_reduce(std::initializer_list<T> range, Result init, const ReduceFunc& reduce)
 {
-	return async::parallel_reduce(async::make_range(range.begin(), range.end()), init, reduce);
+	return stagefuture::parallel_reduce(stagefuture::make_range(range.begin(), range.end()), init, reduce);
 }
 
 } // namespace async

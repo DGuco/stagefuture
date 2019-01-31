@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Partitioners are essentially ranges with an extra split() function. The
@@ -168,29 +168,29 @@ typename std::enable_if<detail::is_partitioner<typename std::decay<Partitioner>:
 template<typename Range>
 typename std::enable_if<!detail::is_partitioner<typename std::decay<Range>::type>::value, detail::auto_partitioner_impl<decltype(std::begin(std::declval<Range>()))>>::type to_partitioner(Range&& range)
 {
-	return async::auto_partitioner(std::forward<Range>(range));
+	return stagefuture::auto_partitioner(std::forward<Range>(range));
 }
 
 // Overloads with std::initializer_list
 template<typename T>
 detail::static_partitioner_impl<decltype(std::declval<std::initializer_list<T>>().begin())> static_partitioner(std::initializer_list<T> range)
 {
-	return async::static_partitioner(async::make_range(range.begin(), range.end()));
+	return stagefuture::static_partitioner(stagefuture::make_range(range.begin(), range.end()));
 }
 template<typename T>
 detail::static_partitioner_impl<decltype(std::declval<std::initializer_list<T>>().begin())> static_partitioner(std::initializer_list<T> range, std::size_t grain)
 {
-	return async::static_partitioner(async::make_range(range.begin(), range.end()), grain);
+	return stagefuture::static_partitioner(stagefuture::make_range(range.begin(), range.end()), grain);
 }
 template<typename T>
 detail::auto_partitioner_impl<decltype(std::declval<std::initializer_list<T>>().begin())> auto_partitioner(std::initializer_list<T> range)
 {
-	return async::auto_partitioner(async::make_range(range.begin(), range.end()));
+	return stagefuture::auto_partitioner(stagefuture::make_range(range.begin(), range.end()));
 }
 template<typename T>
 detail::auto_partitioner_impl<decltype(std::declval<std::initializer_list<T>>().begin())> to_partitioner(std::initializer_list<T> range)
 {
-	return async::auto_partitioner(async::make_range(range.begin(), range.end()));
+	return stagefuture::auto_partitioner(stagefuture::make_range(range.begin(), range.end()));
 }
 
 } // namespace async

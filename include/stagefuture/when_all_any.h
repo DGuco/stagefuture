@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 
 // Result type for when_any
 template<typename Result>
@@ -237,22 +237,22 @@ task<when_any_result<std::vector<typename std::decay<typename std::iterator_trai
 
 // when_all wrapper accepting ranges
 template<typename T>
-decltype(async::when_all(std::begin(std::declval<T>()), std::end(std::declval<T>()))) when_all(T&& tasks)
+decltype(stagefuture::when_all(std::begin(std::declval<T>()), std::end(std::declval<T>()))) when_all(T&& tasks)
 {
-	return async::when_all(std::begin(std::forward<T>(tasks)), std::end(std::forward<T>(tasks)));
+	return stagefuture::when_all(std::begin(std::forward<T>(tasks)), std::end(std::forward<T>(tasks)));
 }
 
 // when_any wrapper accepting ranges
 template<typename T>
-decltype(async::when_any(std::begin(std::declval<T>()), std::end(std::declval<T>()))) when_any(T&& tasks)
+decltype(stagefuture::when_any(std::begin(std::declval<T>()), std::end(std::declval<T>()))) when_any(T&& tasks)
 {
-	return async::when_any(std::begin(std::forward<T>(tasks)), std::end(std::forward<T>(tasks)));
+	return stagefuture::when_any(std::begin(std::forward<T>(tasks)), std::end(std::forward<T>(tasks)));
 }
 
 // when_all with variadic arguments
 inline task<std::tuple<>> when_all()
 {
-	return async::make_task(std::tuple<>());
+	return stagefuture::make_task(std::tuple<>());
 }
 template<typename... T>
 task<std::tuple<typename std::decay<T>::type...>> when_all(T&&... tasks)
@@ -272,7 +272,7 @@ task<std::tuple<typename std::decay<T>::type...>> when_all(T&&... tasks)
 // when_any with variadic arguments
 inline task<when_any_result<std::tuple<>>> when_any()
 {
-	return async::make_task(when_any_result<std::tuple<>>());
+	return stagefuture::make_task(when_any_result<std::tuple<>>());
 }
 template<typename... T>
 task<when_any_result<std::tuple<typename std::decay<T>::type...>>> when_any(T&&... tasks)

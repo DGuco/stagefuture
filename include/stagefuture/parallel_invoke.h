@@ -22,7 +22,7 @@
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
 
-namespace async {
+namespace stagefuture {
 namespace detail {
 
 // Recursively split the arguments so tasks are spawned in parallel
@@ -31,7 +31,7 @@ struct parallel_invoke_internal {
 	template<typename Sched, typename Tuple>
 	static void run(Sched& sched, const Tuple& args)
 	{
-		auto&& t = async::local_spawn(sched, [&sched, &args] {
+		auto&& t = stagefuture::local_spawn(sched, [&sched, &args] {
 			parallel_invoke_internal<Start + Count / 2, Count - Count / 2>::run(sched, args);
 		});
 		parallel_invoke_internal<Start, Count / 2>::run(sched, args);
@@ -64,7 +64,7 @@ typename std::enable_if<detail::is_scheduler<Sched>::value>::type parallel_invok
 template<typename... Args>
 void parallel_invoke(Args&&... args)
 {
-	async::parallel_invoke(::async::default_scheduler(), std::forward<Args>(args)...);
+	stagefuture::parallel_invoke(::stagefuture::default_scheduler(), std::forward<Args>(args)...);
 }
 
 } // namespace async
