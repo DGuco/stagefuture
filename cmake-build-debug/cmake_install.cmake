@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "")
+    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -74,8 +74,8 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     endif()
   endif()
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture.cmake")
-  if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^()$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture-noconfig.cmake")
+  if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake" TYPE FILE FILES "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/Export/cmake/stagefuture-debug.cmake")
   endif()
 endif()
 
@@ -96,11 +96,17 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/ref_count.h"
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/scheduler.h"
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/scheduler_fwd.h"
-    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/task.h"
+    "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/stage_future.h"
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/task_base.h"
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/traits.h"
     "/home/dguco/workspace/cpp/stagefuture/include/stagefuture/when_all_any.h"
     )
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for each subdirectory.
+  include("/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/examples/cmake_install.cmake")
+
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)

@@ -25,7 +25,7 @@
 namespace stagefuture
 {
 
-// Exception thrown when an event_task is destroyed without setting a value
+// Exception thrown when an event_event is destroyed without setting a value
 struct LIBASYNC_EXPORT_EXCEPTION abandoned_event_task
 {
 };
@@ -33,9 +33,9 @@ struct LIBASYNC_EXPORT_EXCEPTION abandoned_event_task
 namespace detail
 {
 
-// Common code for task and shared_task
+// Common code for task and shared_stage_future
 template<typename Result>
-class basic_task
+class basic_future
 {
     // Reference counted internal task object
     detail::task_ptr internal_task;
@@ -47,8 +47,8 @@ class basic_task
     typedef task_result<internal_result> internal_task_type;
 
     // Friend access
-    friend stagefuture::task<Result>;
-    friend stagefuture::shared_task<Result>;
+    friend stagefuture::stage_future<Result>;
+    friend stagefuture::shared_stage_future<Result>;
     template<typename T>
     friend typename T::internal_task_type *get_internal_task(const T &t);
     template<typename T>
@@ -65,7 +65,7 @@ class basic_task
 
     // Common code for then()
     template<typename Sched, typename Func, typename Parent>
-    typename continuation_traits<Parent, Func>::task_type then_internal(Sched &sched, Func &&f, Parent &&parent) const
+    typename continuation_traits<Parent, Func>::future_type then_internal(Sched &sched, Func &&f, Parent &&parent) const
     {
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty task object");
 
@@ -74,14 +74,14 @@ class basic_task
 
         // Create continuation
         typedef continuation_traits<Parent, Func> traits;
-        typedef typename void_to_fake_void<typename traits::task_type::result_type>::type cont_internal_result;
+        typedef typename void_to_fake_void<typename traits::future_type::result_type>::type cont_internal_result;
         typedef continuation_exec_func<Sched,
                                        typename std::decay<Parent>::type,
                                        cont_internal_result,
                                        typename traits::decay_func,
                                        traits::is_value_cont::value,
                                        is_task<typename traits::result_type>::value> exec_func;
-        typename traits::task_type cont;
+        typename traits::future_type cont;
         set_internal_task(cont,
                           task_ptr(new task_func<Sched, exec_func, cont_internal_result>(std::forward<Func>(f),
                                                                                          std::forward<Parent>(parent))));
@@ -137,7 +137,7 @@ public:
     }
 };
 
-// Common code for event_task specializations
+// Common code for event_event specializations
 template<typename Result>
 class basic_event
 {
@@ -151,7 +151,7 @@ class basic_event
     typedef detail::task_result<internal_result> internal_task_type;
 
     // Friend access
-    friend stagefuture::event_task<Result>;
+    friend stagefuture::event_event<Result>;
     template<typename T>
     friend typename T::internal_task_type *get_internal_task(const T &t);
 
@@ -159,7 +159,7 @@ class basic_event
     template<typename T>
     bool set_internal(T &&result) const
     {
-        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_task object");
+        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_event object");
 
         // Only allow setting the value once
         detail::task_state expected = detail::task_state::pending;
@@ -217,14 +217,14 @@ public:
     }
 
     // Get the task linked to this event. This can only be called once.
-    task<Result> get_task()
+    stage_future<Result> get_task()
     {
-        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_task object");
-        LIBASYNC_ASSERT(!internal_task->event_task_got_task, std::logic_error, "get_task() called twice on event_task");
+        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_event object");
+        LIBASYNC_ASSERT(!internal_task->event_task_got_task, std::logic_error, "get_task() called twice on event_event");
 
         // Even if we didn't trigger an assert, don't return a task if one has
         // already been returned.
-        task<Result> out;
+        stage_future<Result> out;
         if (!internal_task->event_task_got_task)
             set_internal_task(out, internal_task);
         internal_task->event_task_got_task = true;
@@ -234,7 +234,7 @@ public:
     // Cancel the event with an exception and cancel continuations
     bool set_exception(std::exception_ptr except) const
     {
-        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_task object");
+        LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_event object");
 
         // Only allow setting the value once
         detail::task_state expected = detail::task_state::pending;
@@ -253,17 +253,17 @@ public:
 } // namespace detail
 
 template<typename Result>
-class task: public detail::basic_task<Result>
+class stage_future: public detail::basic_future<Result>
 {
 public:
     // Movable but not copyable
-    task() = default;
-    task(task &&other) LIBASYNC_NOEXCEPT
-        : detail::basic_task<Result>(std::move(other))
+    stage_future() = default;
+    stage_future(stage_future &&other) LIBASYNC_NOEXCEPT
+        : detail::basic_future<Result>(std::move(other))
     {}
-    task &operator=(task &&other) LIBASYNC_NOEXCEPT
+    stage_future &operator=(stage_future &&other) LIBASYNC_NOEXCEPT
     {
-        detail::basic_task<Result>::operator=(std::move(other));
+        detail::basic_future<Result>::operator=(std::move(other));
         return *this;
     }
 
@@ -275,35 +275,35 @@ public:
         // Move the internal state pointer so that the task becomes invalid,
         // even if an exception is thrown.
         detail::task_ptr my_internal = std::move(this->internal_task);
-        return detail::fake_void_to_void(static_cast<typename task::internal_task_type *>(my_internal.get())
+        return detail::fake_void_to_void(static_cast<typename stage_future::internal_task_type *>(my_internal.get())
                                              ->get_result(*this));
     }
 
     // Add a continuation to the task
     template<typename Sched, typename Func>
-    typename detail::continuation_traits<task, Func>::task_type then(Sched &sched, Func &&f)
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Sched &sched, Func &&f)
     {
         return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
     }
     template<typename Func>
-    typename detail::continuation_traits<task, Func>::task_type then(Func &&f)
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
     {
         return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
     }
 
-    // Create a shared_task from this task
-    shared_task<Result> share()
+    // Create a shared_stage_future from this task
+    shared_stage_future<Result> share()
     {
         LIBASYNC_ASSERT(this->internal_task, std::invalid_argument, "Use of empty task object");
 
-        shared_task<Result> out;
+        shared_stage_future<Result> out;
         detail::set_internal_task(out, std::move(this->internal_task));
         return out;
     }
 };
 
 template<typename Result>
-class shared_task: public detail::basic_task<Result>
+class shared_stage_future: public detail::basic_future<Result>
 {
     // get() return value: const Result& -or- void
     typedef typename std::conditional<
@@ -316,7 +316,7 @@ class shared_task: public detail::basic_task<Result>
 
 public:
     // Movable and copyable
-    shared_task() = default;
+    shared_stage_future() = default;
 
     // Get the result of the task
     get_result get() const
@@ -327,12 +327,12 @@ public:
 
     // Add a continuation to the task
     template<typename Sched, typename Func>
-    typename detail::continuation_traits<shared_task, Func>::task_type then(Sched &sched, Func &&f) const
+    typename detail::continuation_traits<shared_stage_future, Func>::task_type then(Sched &sched, Func &&f) const
     {
         return this->then_internal(sched, std::forward<Func>(f), *this);
     }
     template<typename Func>
-    typename detail::continuation_traits<shared_task, Func>::task_type then(Func &&f) const
+    typename detail::continuation_traits<shared_stage_future, Func>::task_type then(Func &&f) const
     {
         return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
     }
@@ -340,15 +340,15 @@ public:
 
 // Special task type which can be triggered manually rather than when a function executes.
 template<typename Result>
-class event_task: public detail::basic_event<Result>
+class event_event: public detail::basic_event<Result>
 {
 public:
     // Movable but not copyable
-    event_task() = default;
-    event_task(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event() = default;
+    event_event(event_event &&other) LIBASYNC_NOEXCEPT
         : detail::basic_event<Result>(std::move(other))
     {}
-    event_task &operator=(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event &operator=(event_event &&other) LIBASYNC_NOEXCEPT
     {
         detail::basic_event<Result>::operator=(std::move(other));
         return *this;
@@ -367,15 +367,15 @@ public:
 
 // Specialization for references
 template<typename Result>
-class event_task<Result &>: public detail::basic_event<Result &>
+class event_event<Result &>: public detail::basic_event<Result &>
 {
 public:
     // Movable but not copyable
-    event_task() = default;
-    event_task(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event() = default;
+    event_event(event_event &&other) LIBASYNC_NOEXCEPT
         : detail::basic_event<Result &>(std::move(other))
     {}
-    event_task &operator=(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event &operator=(event_event &&other) LIBASYNC_NOEXCEPT
     {
         detail::basic_event<Result &>::operator=(std::move(other));
         return *this;
@@ -390,15 +390,15 @@ public:
 
 // Specialization for void
 template<>
-class event_task<void>: public detail::basic_event<void>
+class event_event<void>: public detail::basic_event<void>
 {
 public:
     // Movable but not copyable
-    event_task() = default;
-    event_task(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event() = default;
+    event_event(event_event &&other) LIBASYNC_NOEXCEPT
         : detail::basic_event<void>(std::move(other))
     {}
-    event_task &operator=(event_task &&other) LIBASYNC_NOEXCEPT
+    event_event &operator=(event_event &&other) LIBASYNC_NOEXCEPT
     {
         detail::basic_event<void>::operator=(std::move(other));
         return *this;
@@ -413,7 +413,7 @@ public:
 
 // Task type returned by local_spawn()
 template<typename Sched, typename Func>
-class local_task
+class local_future
 {
     // Make sure the function type is callable
     typedef typename std::decay<Func>::type decay_func;
@@ -430,17 +430,17 @@ class local_task
                                    detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
 
     // Task object embedded directly. The ref-count is initialized to 1 so it
-    // will never be freed using delete, only when the local_task is destroyed.
+    // will never be freed using delete, only when the local_future is destroyed.
     detail::task_func<Sched, exec_func, internal_result> internal_task;
 
     // Friend access for local_spawn
     template<typename S, typename F>
-    friend local_task<S, F> local_spawn(S &sched, F &&f);
+    friend local_future<S, F> local_spawn(S &sched, F &&f);
     template<typename F>
-    friend local_task<detail::default_scheduler_type, F> local_spawn(F &&f);
+    friend local_future<detail::default_scheduler_type, F> local_spawn(F &&f);
 
     // Constructor, used by local_spawn
-    local_task(Sched &sched, Func &&f)
+    local_future(Sched &sched, Func &&f)
         : internal_task(std::forward<Func>(f))
     {
         // Avoid an expensive ref-count modification since the task isn't shared yet
@@ -450,11 +450,11 @@ class local_task
 
 public:
     // Non-movable and non-copyable
-    local_task(const local_task &) = delete;
-    local_task &operator=(const local_task &) = delete;
+    local_future(const local_future &) = delete;
+    local_future &operator=(const local_future &) = delete;
 
     // Wait for the task to complete when destroying
-    ~local_task()
+    ~local_future()
     {
         wait();
 
@@ -493,7 +493,7 @@ public:
     result_type get()
     {
         internal_task.wait_and_throw();
-        return detail::fake_void_to_void(internal_task.get_result(task<result_type>()));
+        return detail::fake_void_to_void(internal_task.get_result(stage_future<result_type>()));
     }
 
     // Get the exception associated with a canceled task
@@ -508,7 +508,7 @@ public:
 
 // Spawn a function asynchronously
 template<typename Sched, typename Func>
-task<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
+stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
 spawn(Sched &sched, Func &&f)
 {
     // Using result_of in the function return type to work around bugs in the Intel
@@ -525,7 +525,7 @@ spawn(Sched &sched, Func &&f)
                                    internal_result,
                                    decay_func,
                                    detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
-    task<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
+    stage_future<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
     detail::set_internal_task(out,
                               detail::task_ptr(new detail::task_func<Sched, exec_func, internal_result>(std::forward<
                                   Func>(f))));
@@ -544,9 +544,9 @@ decltype(stagefuture::spawn(::stagefuture::default_scheduler(), std::declval<Fun
 
 // Create a completed task containing a value
 template<typename T>
-task<typename std::decay<T>::type> make_task(T &&value)
+stage_future<typename std::decay<T>::type> make_task(T &&value)
 {
-    task<typename std::decay<T>::type> out;
+    stage_future<typename std::decay<T>::type> out;
 
     detail::set_internal_task(out, detail::task_ptr(new detail::task_result<typename std::decay<T>::type>));
     detail::get_internal_task(out)->set_result(std::forward<T>(value));
@@ -555,9 +555,9 @@ task<typename std::decay<T>::type> make_task(T &&value)
     return out;
 }
 template<typename T>
-task<T &> make_task(std::reference_wrapper<T> value)
+stage_future<T &> make_task(std::reference_wrapper<T> value)
 {
-    task<T &> out;
+    stage_future<T &> out;
 
     detail::set_internal_task(out, detail::task_ptr(new detail::task_result<T &>));
     detail::get_internal_task(out)->set_result(value.get());
@@ -565,9 +565,9 @@ task<T &> make_task(std::reference_wrapper<T> value)
 
     return out;
 }
-inline task<void> make_task()
+inline stage_future<void> make_task()
 {
-    task<void> out;
+    stage_future<void> out;
 
     detail::set_internal_task(out, detail::task_ptr(new detail::task_result<detail::fake_void>));
     detail::get_internal_task(out)->state.store(detail::task_state::completed, std::memory_order_relaxed);
@@ -577,9 +577,9 @@ inline task<void> make_task()
 
 // Create a canceled task containing an exception
 template<typename T>
-task<T> make_exception_task(std::exception_ptr except)
+stage_future<T> make_exception_task(std::exception_ptr except)
 {
-    task<T> out;
+    stage_future<T> out;
 
     detail::set_internal_task(out,
                               detail::task_ptr(new detail::task_result<typename detail::void_to_fake_void<T>::type>));
@@ -590,16 +590,16 @@ task<T> make_exception_task(std::exception_ptr except)
 }
 
 // Spawn a very limited task which is restricted to the current function and
-// joins on destruction. Because local_task is not movable, the result must
+// joins on destruction. Because local_future is not movable, the result must
 // be captured in a reference, like this:
 // auto&& x = local_spawn(...);
 template<typename Sched, typename Func>
 #ifdef __GNUC__
 __attribute__((warn_unused_result))
 #endif
-local_task<Sched, Func> local_spawn(Sched &sched, Func &&f)
+local_future<Sched, Func> local_spawn(Sched &sched, Func &&f)
 {
-    // Since local_task is not movable, we construct it in-place and let the
+    // Since local_future is not movable, we construct it in-place and let the
     // caller extend the lifetime of the returned object using a reference.
     return {sched, std::forward<Func>(f)};
 }
@@ -607,7 +607,7 @@ template<typename Func>
 #ifdef __GNUC__
 __attribute__((warn_unused_result))
 #endif
-local_task<detail::default_scheduler_type, Func> local_spawn(Func &&f)
+local_future<detail::default_scheduler_type, Func> local_spawn(Func &&f)
 {
     return {::stagefuture::default_scheduler(), std::forward<Func>(f)};
 }

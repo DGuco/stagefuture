@@ -125,11 +125,11 @@ namespace stagefuture
 {
 
 template<typename Result>
-class task;
+class stage_future;
 template<typename Result>
-class shared_task;
+class shared_stage_future;
 template<typename Result>
-class event_task;
+class event_event;
 
 } // namespace async
 
@@ -141,7 +141,7 @@ class event_task;
 #include "stagefuture/continuation_vector.h"
 #include "stagefuture/task_base.h"
 #include "stagefuture/scheduler.h"
-#include "stagefuture/task.h"
+#include "stagefuture/stage_future.h"
 #include "stagefuture/when_all_any.h"
 #include "stagefuture/cancel.h"
 #include "stagefuture/range.h"

@@ -32,7 +32,7 @@ class threadpool_scheduler;
 // Scheduler interface:
 // A scheduler is any type that implements this function:
 // void schedule(stagefuture::task_run_handle t);
-// This function should result in t.run() being called at some future point.
+// This function should result in t.run() being called at some stage_future point.
 
 namespace detail
 {

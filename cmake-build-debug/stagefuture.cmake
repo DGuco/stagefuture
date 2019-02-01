@@ -49,11 +49,11 @@ set_target_properties(stagefuture PROPERTIES
   INTERFACE_LINK_LIBRARIES "Threads::Threads"
 )
 
-# Import target "stagefuture" for configuration ""
-set_property(TARGET stagefuture APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
+# Import target "stagefuture" for configuration "Debug"
+set_property(TARGET stagefuture APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(stagefuture PROPERTIES
-  IMPORTED_LOCATION_NOCONFIG "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libstagefuture.so"
-  IMPORTED_SONAME_NOCONFIG "libstagefuture.so"
+  IMPORTED_LOCATION_DEBUG "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/libstagefuture.so"
+  IMPORTED_SONAME_DEBUG "libstagefuture.so"
   )
 
 # This file does not depend on other imported targets which have

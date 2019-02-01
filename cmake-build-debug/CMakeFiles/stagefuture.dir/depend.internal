@@ -14,7 +14,7 @@ CMakeFiles/stagefuture.dir/src/scheduler.cpp.o
  ../include/stagefuture/ref_count.h
  ../include/stagefuture/scheduler.h
  ../include/stagefuture/scheduler_fwd.h
- ../include/stagefuture/task.h
+ ../include/stagefuture/stage_future.h
  ../include/stagefuture/task_base.h
  ../include/stagefuture/traits.h
  ../include/stagefuture/when_all_any.h
@@ -37,7 +37,7 @@ CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o
  ../include/stagefuture/ref_count.h
  ../include/stagefuture/scheduler.h
  ../include/stagefuture/scheduler_fwd.h
- ../include/stagefuture/task.h
+ ../include/stagefuture/stage_future.h
  ../include/stagefuture/task_base.h
  ../include/stagefuture/traits.h
  ../include/stagefuture/when_all_any.h

@@ -53,8 +53,8 @@ stagefuture/task_base.h
 ../include/stagefuture/task_base.h
 stagefuture/scheduler.h
 ../include/stagefuture/scheduler.h
-stagefuture/task.h
-../include/stagefuture/task.h
+stagefuture/stage_future.h
+../include/stagefuture/stage_future.h
 stagefuture/when_all_any.h
 ../include/stagefuture/when_all_any.h
 stagefuture/cancel.h
@@ -92,7 +92,7 @@ stagefuture/parallel_reduce.h
 
 ../include/stagefuture/scheduler_fwd.h
 
-../include/stagefuture/task.h
+../include/stagefuture/stage_future.h
 
 ../include/stagefuture/task_base.h
 

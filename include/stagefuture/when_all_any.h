@@ -43,7 +43,7 @@ namespace detail
 template<typename Result>
 struct when_all_state: public ref_count_base<when_all_state<Result>>
 {
-    event_task<Result> event;
+    event_event<Result> event;
     Result result;
 
     when_all_state(std::size_t count)
@@ -96,7 +96,7 @@ struct when_all_func_tuple
 template<typename Result>
 struct when_any_state: public ref_count_base<when_any_state<Result>>
 {
-    event_task<when_any_result<Result>> event;
+    event_event<when_any_result<Result>> event;
     Result result;
 
     when_any_state(std::size_t count)
@@ -187,7 +187,7 @@ void when_any_variadic(when_any_state<Result> *state, First &&first, T &&... tas
 
 // Combine a set of tasks into one task which is signaled when all specified tasks finish
 template<typename Iter>
-task<std::vector<typename std::decay<typename std::iterator_traits<Iter>::value_type>::type>>
+stage_future<std::vector<typename std::decay<typename std::iterator_traits<Iter>::value_type>::type>>
 when_all(Iter begin, Iter end)
 {
     typedef typename std::decay<typename std::iterator_traits<Iter>::value_type>::type task_type;
@@ -223,7 +223,7 @@ when_all(Iter begin, Iter end)
 
 // Combine a set of tasks into one task which is signaled when one of the tasks finishes
 template<typename Iter>
-task<when_any_result<std::vector<typename std::decay<typename std::iterator_traits<Iter>::value_type>::type>>>
+stage_future<when_any_result<std::vector<typename std::decay<typename std::iterator_traits<Iter>::value_type>::type>>>
 when_any(Iter begin, Iter end)
 {
     typedef typename std::decay<typename std::iterator_traits<Iter>::value_type>::type task_type;
@@ -277,12 +277,12 @@ decltype(stagefuture::when_any(std::begin(std::declval<T>()), std::end(std::decl
 }
 
 // when_all with variadic arguments
-inline task<std::tuple<>> when_all()
+inline stage_future<std::tuple<>> when_all()
 {
     return stagefuture::make_task(std::tuple<>());
 }
 template<typename... T>
-task<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks)
+stage_future<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks)
 {
     typedef std::tuple<typename std::decay<T>::type...> result_type;
 
@@ -297,12 +297,12 @@ task<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks)
 }
 
 // when_any with variadic arguments
-inline task<when_any_result<std::tuple<>>> when_any()
+inline stage_future<when_any_result<std::tuple<>>> when_any()
 {
     return stagefuture::make_task(when_any_result<std::tuple<>>());
 }
 template<typename... T>
-task<when_any_result<std::tuple<typename std::decay<T>::type...>>> when_any(T &&... tasks)
+stage_future<when_any_result<std::tuple<typename std::decay<T>::type...>>> when_any(T &&... tasks)
 {
     typedef std::tuple<typename std::decay<T>::type...> result_type;
 

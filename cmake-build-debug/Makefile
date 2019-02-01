@@ -116,8 +116,8 @@ install/local/fast: preinstall/fast
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/home/dguco/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -191,6 +191,19 @@ stagefuture/fast:
 	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/build
 .PHONY : stagefuture/fast
 
+#=============================================================================
+# Target rules for targets named example
+
+# Build rule for target.
+example: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 example
+.PHONY : example
+
+# fast build rule for target.
+example/fast:
+	$(MAKE) -f examples/CMakeFiles/example.dir/build.make examples/CMakeFiles/example.dir/build
+.PHONY : example/fast
+
 src/scheduler.o: src/scheduler.cpp.o
 
 .PHONY : src/scheduler.o
@@ -260,6 +273,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... list_install_components"
+	@echo "... example"
 	@echo "... src/scheduler.o"
 	@echo "... src/scheduler.i"
 	@echo "... src/scheduler.s"

@@ -56,21 +56,21 @@ struct is_task: public std::false_type
 {
 };
 template<typename T>
-struct is_task<task < T>>:
+struct is_task<stage_future < T>>:
 public std::true_type
 {
 };
 template<typename T>
-struct is_task<const task<T>>: public std::true_type
+struct is_task<const stage_future<T>>: public std::true_type
 {
 };
 template<typename T>
-struct is_task<shared_task < T>>:
+struct is_task<shared_stage_future < T>>:
 public std::true_type
 {
 };
 template<typename T>
-struct is_task<const shared_task<T>>: public std::true_type
+struct is_task<const shared_stage_future<T>>: public std::true_type
 {
 };
 
@@ -81,20 +81,20 @@ struct remove_task
     typedef T type;
 };
 template<typename T>
-struct remove_task<task < T>> {
+struct remove_task<stage_future < T>> {
 typedef T type;
 };
 template<typename T>
-struct remove_task<const task<T>>
+struct remove_task<const stage_future<T>>
 {
     typedef T type;
 };
 template<typename T>
-struct remove_task<shared_task < T>> {
+struct remove_task<shared_stage_future < T>> {
 typedef T type;
 };
 template<typename T>
-struct remove_task<const shared_task<T>>
+struct remove_task<const shared_stage_future<T>>
 {
     typedef T type;
 };
@@ -146,9 +146,9 @@ typename void_to_fake_void<decltype(std::declval<Func>()())>::type invoke_fake_v
 template<typename Func, typename Parent, typename = decltype(std::declval<Func>()(std::declval<Parent>().get()))>
 std::true_type is_value_cont_helper(const Parent &, int, int);
 template<typename Func, typename = decltype(std::declval<Func>()())>
-std::true_type is_value_cont_helper(const task<void> &, int, int);
+std::true_type is_value_cont_helper(const stage_future<void> &, int, int);
 template<typename Func, typename = decltype(std::declval<Func>()())>
-std::true_type is_value_cont_helper(const shared_task<void> &, int, int);
+std::true_type is_value_cont_helper(const shared_stage_future<void> &, int, int);
 template<typename Func, typename Parent, typename = decltype(std::declval<Func>()(std::declval<Parent>()))>
 std::false_type is_value_cont_helper(const Parent &, int, ...);
 template<typename Func, typename Parent>
@@ -165,7 +165,7 @@ struct continuation_traits
                                       Parent>::type param_type;
     typedef decltype(detail::fake_void_to_void(detail::invoke_fake_void(std::declval<decay_func>(),
                                                                         std::declval<param_type>()))) result_type;
-    typedef task<typename remove_task<result_type>::type> task_type;
+    typedef stage_future<typename remove_task<result_type>::type> future_type;
 };
 
 } // namespace detail

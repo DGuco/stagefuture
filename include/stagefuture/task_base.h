@@ -31,7 +31,7 @@ namespace detail
 enum class task_state: unsigned char
 {
     pending, // Task has not completed yet
-    locked, // Task is locked (used by event_task to prevent double set)
+    locked, // Task is locked (used by event_event to prevent double set)
     unwrapped, // Task is waiting for an unwrapped task to finish
     completed, // Task has finished execution and a result is available
     canceled // Task has been canceled and an exception is available
@@ -69,7 +69,7 @@ struct LIBASYNC_CACHELINE_ALIGN task_base: public ref_count_base<task_base, task
     // Task state
     std::atomic<task_state> state;
 
-    // Whether get_task() was already called on an event_task
+    // Whether get_task() was already called on an event_event
     bool event_task_got_task;
 
     // Vector of continuations
@@ -193,12 +193,12 @@ struct task_result_holder: public task_base
     // Return a result using an lvalue or rvalue reference depending on the task
     // type. The task parameter is not used, it is just there for overload resolution.
     template<typename T>
-    Result &&get_result(const task<T> &)
+    Result &&get_result(const stage_future<T> &)
     {
         return std::move(*reinterpret_cast<Result *>(&result));
     }
     template<typename T>
-    const Result &get_result(const shared_task<T> &)
+    const Result &get_result(const shared_stage_future<T> &)
     {
         return *reinterpret_cast<Result *>(&result);
     }
@@ -230,12 +230,12 @@ struct task_result_holder<Result &>: public task_base
     }
 
     template<typename T>
-    Result &get_result(const task<T> &)
+    Result &get_result(const stage_future<T> &)
     {
         return *result;
     }
     template<typename T>
-    Result &get_result(const shared_task<T> &)
+    Result &get_result(const shared_stage_future<T> &)
     {
         return *result;
     }
@@ -257,12 +257,12 @@ struct task_result_holder<fake_void>: public task_base
     // Get the result as fake_void so that it can be passed to set_result and
     // continuations
     template<typename T>
-    fake_void get_result(const task<T> &)
+    fake_void get_result(const stage_future<T> &)
     {
         return fake_void();
     }
     template<typename T>
-    fake_void get_result(const shared_task<T> &)
+    fake_void get_result(const shared_stage_future<T> &)
     {
         return fake_void();
     }

@@ -13,7 +13,7 @@ CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/range.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/ref_count.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/scheduler.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/scheduler_fwd.h
-CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/task.h
+CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/stage_future.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/task_base.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/traits.h
 CMakeFiles/stagefuture.dir/src/scheduler.cpp.o: ../include/stagefuture/when_all_any.h
@@ -36,7 +36,7 @@ CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefutur
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/ref_count.h
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/scheduler.h
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/scheduler_fwd.h
-CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/task.h
+CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/stage_future.h
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/task_base.h
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/traits.h
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../include/stagefuture/when_all_any.h
