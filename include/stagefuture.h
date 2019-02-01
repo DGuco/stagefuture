@@ -121,7 +121,8 @@
 #endif
 
 // Some forward declarations
-namespace stagefuture {
+namespace stagefuture
+{
 
 template<typename Result>
 class task;

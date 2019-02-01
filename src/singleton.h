@@ -18,52 +18,55 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace stagefuture {
-namespace detail {
+namespace stagefuture
+{
+namespace detail
+{
 
 // Thread-safe singleton wrapper class
 #ifdef HAVE_THREAD_SAFE_STATIC
 // C++11 guarantees thread safety for static initialization
 template<typename T>
-class singleton {
+class singleton
+{
 public:
-	static T& get_instance()
-	{
-		static T instance;
-		return instance;
-	}
+    static T &get_instance()
+    {
+        static T instance;
+        return instance;
+    }
 };
 #else
 // Some compilers don't support thread-safe static initialization, so emulate it
 template<typename T>
 class singleton {
-	std::mutex lock;
-	std::atomic<bool> init_flag;
-	typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type storage;
+    std::mutex lock;
+    std::atomic<bool> init_flag;
+    typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type storage;
 
-	static singleton instance;
+    static singleton instance;
 
-	// Use a destructor instead of atexit() because the latter does not work
-	// properly when the singleton is in a library that is unloaded.
-	~singleton()
-	{
-		if (init_flag.load(std::memory_order_acquire))
-			reinterpret_cast<T*>(&storage)->~T();
-	}
+    // Use a destructor instead of atexit() because the latter does not work
+    // properly when the singleton is in a library that is unloaded.
+    ~singleton()
+    {
+        if (init_flag.load(std::memory_order_acquire))
+            reinterpret_cast<T*>(&storage)->~T();
+    }
 
 public:
-	static T& get_instance()
-	{
-		T* ptr = reinterpret_cast<T*>(&instance.storage);
-		if (!instance.init_flag.load(std::memory_order_acquire)) {
-			std::lock_guard<std::mutex> locked(instance.lock);
-			if (!instance.init_flag.load(std::memory_order_relaxed)) {
-				new(ptr) T;
-				instance.init_flag.store(true, std::memory_order_release);
-			}
-		}
-		return *ptr;
-	}
+    static T& get_instance()
+    {
+        T* ptr = reinterpret_cast<T*>(&instance.storage);
+        if (!instance.init_flag.load(std::memory_order_acquire)) {
+            std::lock_guard<std::mutex> locked(instance.lock);
+            if (!instance.init_flag.load(std::memory_order_relaxed)) {
+                new(ptr) T;
+                instance.init_flag.store(true, std::memory_order_release);
+            }
+        }
+        return *ptr;
+    }
 };
 
 template<typename T> singleton<T> singleton<T>::instance;
