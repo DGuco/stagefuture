@@ -23,14 +23,17 @@
 #include <chrono>
 #include <string>
 
+using namespace stagefuture;
 
 int main(int argc, char *argv[])
 {
-    auto task1 = stagefuture::spawn([]
-                                           {
-                                               std::cout << "Task 1 executes asynchronously" << std::endl;
-                                           });
-    auto task2 = stagefuture::spawn([]() -> int
+    int test_a = 10;
+    auto task1 = stagefuture::run_async([test_a]
+                                        {
+                                            std::cout << "Task 1 executes asynchronously,test_a * test_a: "
+                                                      << test_a * test_a << std::endl;
+                                        });
+    auto task2 = stagefuture::supply_async([]() -> int
                                            {
                                                std::cout << "Task 2 executes in parallel with stage_future 1"
                                                          << std::endl;

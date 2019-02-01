@@ -195,7 +195,7 @@ when_all(Iter begin, Iter end)
 
     // Handle empty ranges
     if (begin == end)
-        return make_task(result_type());
+        return make_future(result_type());
 
     // Create shared state, initialized with the proper reference count
     std::size_t count = std::distance(begin, end);
@@ -231,7 +231,7 @@ when_any(Iter begin, Iter end)
 
     // Handle empty ranges
     if (begin == end)
-        return make_task(when_any_result<result_type>());
+        return make_future(when_any_result<result_type>());
 
     // Create shared state, initialized with the proper reference count
     std::size_t count = std::distance(begin, end);
@@ -279,7 +279,7 @@ decltype(stagefuture::when_any(std::begin(std::declval<T>()), std::end(std::decl
 // when_all with variadic arguments
 inline stage_future<std::tuple<>> when_all()
 {
-    return stagefuture::make_task(std::tuple<>());
+    return stagefuture::make_future(std::tuple<>());
 }
 template<typename... T>
 stage_future<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks)
@@ -299,7 +299,7 @@ stage_future<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks
 // when_any with variadic arguments
 inline stage_future<when_any_result<std::tuple<>>> when_any()
 {
-    return stagefuture::make_task(when_any_result<std::tuple<>>());
+    return stagefuture::make_future(when_any_result<std::tuple<>>());
 }
 template<typename... T>
 stage_future<when_any_result<std::tuple<typename std::decay<T>::type...>>> when_any(T &&... tasks)

@@ -220,7 +220,9 @@ public:
     stage_future<Result> get_task()
     {
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty event_event object");
-        LIBASYNC_ASSERT(!internal_task->event_task_got_task, std::logic_error, "get_task() called twice on event_event");
+        LIBASYNC_ASSERT(!internal_task->event_task_got_task,
+                        std::logic_error,
+                        "get_task() called twice on event_event");
 
         // Even if we didn't trigger an assert, don't return a task if one has
         // already been returned.
@@ -300,6 +302,10 @@ public:
         detail::set_internal_task(out, std::move(this->internal_task));
         return out;
     }
+private:
+    template<typename Sched, typename Func>
+    static stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
+    shedule_task(Sched &sched, Func &&f);
 };
 
 template<typename Result>
@@ -506,17 +512,41 @@ public:
     }
 };
 
-// Spawn a function asynchronously
+/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
+// supply_async a function asynchronously return not void value with the parameter sched
 template<typename Sched, typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-spawn(Sched &sched, Func &&f)
+supply_async(Sched &sched, Func &&f);
+// supply_async a function asynchronously return not void value with default sched
+template<typename Func>
+decltype(supply_async(::stagefuture::default_scheduler(), std::declval<Func>()))
+supply_async(Func &&f);
+// run_async a function asynchronously return void value with the parameter sched
+template<typename Sched, typename Func>
+stage_future<void> run_async(Sched &sched, Func &&f);
+// run_async a function asynchronously return void value with default sched
+template<typename Func>
+stage_future<void> run_async(Func &&f);
+// Create a completed task containing a value
+template<typename T>
+stage_future<typename std::decay<T>::type> make_future(T &&value);
+template<typename T>
+stage_future<T &> make_task(std::reference_wrapper<T> value);
+inline stage_future<void> make_task();
+// Create a canceled task containing an exception
+template<typename T>
+stage_future<T> make_exception_task(std::exception_ptr except);
+/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
+
+template<typename Sched, typename Func>
+stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
+shedule_task(Sched &sched, Func &&f)
 {
     // Using result_of in the function return type to work around bugs in the Intel
     // C++ compiler.
-
     // Make sure the function type is callable
     typedef typename std::decay<Func>::type decay_func;
-    static_assert(detail::is_callable<decay_func()>::value, "Invalid function type passed to spawn()");
+    static_assert(detail::is_callable<decay_func()>::value, "Invalid function type passed to supply_async()");
 
     // Create task
     typedef typename detail::void_to_fake_void<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type>::type
@@ -527,24 +557,58 @@ spawn(Sched &sched, Func &&f)
                                    detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
     stage_future<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
     detail::set_internal_task(out,
-                              detail::task_ptr(new detail::task_func<Sched, exec_func, internal_result>(std::forward<
-                                  Func>(f))));
+                              detail::task_ptr(new detail::task_func<Sched,
+                                                                     exec_func,
+                                                                     internal_result>(std::forward<Func>(f))));
 
     // Avoid an expensive ref-count modification since the task isn't shared yet
     detail::get_internal_task(out)->add_ref_unlocked();
     detail::schedule_task(sched, detail::task_ptr(detail::get_internal_task(out)));
-
     return out;
 }
-template<typename Func>
-decltype(stagefuture::spawn(::stagefuture::default_scheduler(), std::declval<Func>())) spawn(Func &&f)
+
+// supply_async a function asynchronously return not void value with the parameter sched
+template<typename Sched, typename Func>
+stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
+supply_async(Sched &sched, Func &&f)
 {
-    return stagefuture::spawn(::stagefuture::default_scheduler(), std::forward<Func>(f));
+    //the type of the function's return value must not be void
+    static_assert(!std::is_void<decltype(f())>::value,
+                  "The type of Parameter func's return value for supply_async is must be no void");
+    return shedule_task(sched, std::forward<Func>(f));
+}
+
+template<typename Func>
+decltype(supply_async(::stagefuture::default_scheduler(), std::declval<Func>()))
+supply_async(Func &&f)
+{
+    //the type of the function's return value must not be void
+    static_assert(!std::is_void<decltype(f())>::value,
+                  "The type of Parameter func's return value for supply_async is must be no void");
+    return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
+}
+
+template<typename Sched, typename Func>
+stage_future<void> run_async(Sched &sched, Func &&f)
+{
+    //the type of the function's return value must be void
+    static_assert(std::is_void<decltype(f())>::value,
+                  "The type of Parameter func's return value for run_async is must be void");
+    return shedule_task(sched, std::forward<Func>(f));
+}
+
+template<typename Func>
+stage_future<void> run_async(Func &&f)
+{
+    //the type of the function's return value must be void
+    static_assert(std::is_void<decltype(f())>::value,
+                  "The type of Parameter func's return value for run_async is must be void");
+    return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
 }
 
 // Create a completed task containing a value
 template<typename T>
-stage_future<typename std::decay<T>::type> make_task(T &&value)
+stage_future<typename std::decay<T>::type> make_future(T &&value)
 {
     stage_future<typename std::decay<T>::type> out;
 
@@ -594,9 +658,6 @@ stage_future<T> make_exception_task(std::exception_ptr except)
 // be captured in a reference, like this:
 // auto&& x = local_spawn(...);
 template<typename Sched, typename Func>
-#ifdef __GNUC__
-__attribute__((warn_unused_result))
-#endif
 local_future<Sched, Func> local_spawn(Sched &sched, Func &&f)
 {
     // Since local_future is not movable, we construct it in-place and let the

@@ -305,7 +305,7 @@ static void worker_thread(threadpool_data *owning_threadpool, std::size_t thread
     if (owning_threadpool->postrun) owning_threadpool->postrun();
 }
 
-// Recursive function to spawn all worker threads in parallel
+// Recursive function to supply_async all worker threads in parallel
 static void recursive_spawn_worker_thread(threadpool_data *impl, std::size_t index, std::size_t threads)
 {
     // If we are down to one thread, go to the worker main loop
