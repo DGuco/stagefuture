@@ -43,28 +43,25 @@ inline bool is_finished(task_state s)
     return s == task_state::completed || s == task_state::canceled;
 }
 
-// Virtual function table used to allow dynamic dispatch for task objects.
-// While this is very similar to what a compiler would generate with virtual
-// functions, this scheme was found to result in significantly smaller
-// generated code size.
-struct task_base_vtable
+class task_interface
 {
+public:
     // Destroy the function and result
-    void (*destroy)(task_base *) LIBASYNC_NOEXCEPT;
+    virtual void destroy(task_base *) LIBASYNC_NOEXCEPT = 0;
 
     // Run the associated function
-    void (*run)(task_base *) LIBASYNC_NOEXCEPT;
+    virtual void run(task_base *) LIBASYNC_NOEXCEPT = 0;
 
     // Cancel the task with an exception
-    void (*cancel)(task_base *, std::exception_ptr &&) LIBASYNC_NOEXCEPT;
+    virtual void cancel(task_base *, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
 
     // Schedule the task using its scheduler
-    void (*schedule)(task_base *parent, task_ptr t);
+    virtual void schedule(task_base *parent, task_ptr t) = 0;
 };
 
 // Type-generic base task object
 struct task_base_deleter;
-struct LIBASYNC_CACHELINE_ALIGN task_base: public ref_count_base<task_base, task_base_deleter>
+struct LIBASYNC_CACHELINE_ALIGN task_base: public task_interface, ref_count_base<task_base, task_base_deleter>
 {
     // Task state
     std::atomic<task_state> state;
@@ -74,9 +71,6 @@ struct LIBASYNC_CACHELINE_ALIGN task_base: public ref_count_base<task_base, task
 
     // Vector of continuations
     continuation_vector continuations;
-
-    // Virtual function table used for dynamic dispatch
-    const task_base_vtable *vtable;
 
     // Use aligned memory allocation
     static void *operator new(std::size_t size)
@@ -107,7 +101,7 @@ struct LIBASYNC_CACHELINE_ALIGN task_base: public ref_count_base<task_base, task
             detail::schedule_task(sched, std::move(cont));
         } LIBASYNC_CATCH(...) {
             // This is suboptimal, but better than letting the exception leak
-            cont->vtable->cancel(cont.get(), std::current_exception());
+            cont->cancel(cont.get(), std::current_exception());
         }
     }
 
@@ -118,8 +112,7 @@ struct LIBASYNC_CACHELINE_ALIGN task_base: public ref_count_base<task_base, task
     {
         continuations.flush_and_lock([this](task_ptr t)
                                      {
-                                         const task_base_vtable *vtable = t->vtable;
-                                         vtable->schedule(this, std::move(t));
+                                         t->schedule(this, std::move(t));
                                      });
     }
 
@@ -166,7 +159,7 @@ struct task_base_deleter
     static void do_delete(task_base *p)
     {
         // Go through the vtable to delete p with its proper type
-        p->vtable->destroy(p);
+        p->destroy(p);
     }
 };
 
@@ -271,11 +264,8 @@ struct task_result_holder<fake_void>: public task_base
 template<typename Result>
 struct task_result: public task_result_holder<Result>
 {
-    // Virtual function table for task_result
-    static const task_base_vtable vtable_impl;
     task_result()
     {
-        this->vtable = &vtable_impl;
     }
 
     // Destroy the exception
@@ -314,18 +304,24 @@ struct task_result: public task_result_holder<Result>
     }
 
     // Delete the task using its proper type
-    static void destroy(task_base *t) LIBASYNC_NOEXCEPT
+    virtual void destroy(task_base *t) LIBASYNC_NOEXCEPT override
     {
         delete static_cast<task_result<Result> *>(t);
     }
-};
 
-template<typename Result>
-const task_base_vtable task_result<Result>::vtable_impl = {
-    task_result<Result>::destroy, // destroy
-    nullptr, // run
-    nullptr, // cancel
-    nullptr // schedule
+    void run(task_base *base) LIBASYNC_NOEXCEPT override
+    {
+
+    }
+    void cancel(task_base *base, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    {
+
+    }
+
+    void schedule(task_base *parent, task_ptr t) override
+    {
+
+    }
 };
 
 // Class to hold a function object, with empty base class optimization
@@ -404,40 +400,10 @@ struct func_holder<Func, typename std::enable_if<std::is_empty<Func>::value>::ty
 template<typename Sched, typename Func, typename Result>
 struct task_func: public task_result<Result>, func_holder<Func>
 {
-    // Virtual function table for task_func
-    static const task_base_vtable vtable_impl;
     template<typename... Args>
     explicit task_func(Args &&... args)
     {
-        this->vtable = &vtable_impl;
         this->init_func(std::forward<Args>(args)...);
-    }
-
-    // Run the stored function
-    static void run(task_base *t) LIBASYNC_NOEXCEPT
-    {
-        LIBASYNC_TRY {
-            // Dispatch to execution function
-            static_cast<task_func<Sched, Func, Result> *>(t)->get_func()(t);
-        } LIBASYNC_CATCH(...) {
-            cancel(t, std::current_exception());
-        }
-    }
-
-    // Cancel the task
-    static void cancel(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT
-    {
-        // Destroy the function object when canceling since it won't be
-        // used anymore.
-        static_cast<task_func<Sched, Func, Result> *>(t)->destroy_func();
-        static_cast<task_func<Sched, Func, Result> *>(t)->cancel_base(std::move(except));
-    }
-
-    // Schedule a continuation task using its scheduler
-    static void schedule(task_base *parent, task_ptr t)
-    {
-        void *sched = static_cast<task_func<Sched, Func, Result> *>(t.get())->sched;
-        parent->run_continuation(*static_cast<Sched *>(sched), std::move(t));
     }
 
     // Free the function
@@ -450,18 +416,40 @@ struct task_func: public task_result<Result>, func_holder<Func>
     }
 
     // Delete the task using its proper type
-    static void destroy(task_base *t) LIBASYNC_NOEXCEPT
+    virtual void destroy(task_base *t) LIBASYNC_NOEXCEPT override
     {
         delete static_cast<task_func<Sched, Func, Result> *>(t);
     }
-};
 
-template<typename Sched, typename Func, typename Result>
-const task_base_vtable task_func<Sched, Func, Result>::vtable_impl = {
-    task_func<Sched, Func, Result>::destroy, // destroy
-    task_func<Sched, Func, Result>::run, // run
-    task_func<Sched, Func, Result>::cancel, // cancel
-    task_func<Sched, Func, Result>::schedule // schedule
+    void run(task_base *base) LIBASYNC_NOEXCEPT override
+    {
+        LIBASYNC_TRY {
+            // Dispatch to execution function
+            static_cast<task_func<Sched, Func, Result> *>(base)->get_func()(base);
+        } LIBASYNC_CATCH(...) {
+            cancel(base, std::current_exception());
+        }
+    }
+
+    void cancel(task_base *base, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    {
+        // Destroy the function object when canceling since it won't be
+        // used anymore.
+        static_cast<task_func<Sched, Func, Result> *>(base)->destroy_func();
+        static_cast<task_func<Sched, Func, Result> *>(base)->cancel_base(std::move(ptr));
+    }
+
+    void schedule(task_base *parent, task_ptr t) override
+    {
+        void *sched = static_cast<task_func<Sched, Func, Result> *>(t.get())->sched;
+        parent->run_continuation(*static_cast<Sched *>(sched), std::move(t));
+    }
+
+    // Cancel the task
+    static void cancel_task(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT
+    {
+        t->cancel(t, std::move(except));
+    }
 };
 
 // Helper functions to access the internal_task member of a task object, which
@@ -581,9 +569,9 @@ struct continuation_exec_func<Sched, Parent, Result, Func, true, false>: private
     void operator()(task_base *t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
-            task_func<Sched, continuation_exec_func, Result>::cancel(t,
-                                                                     std::exception_ptr(get_internal_task(parent)
-                                                                                            ->get_exception()));
+            task_func<Sched, continuation_exec_func, Result>::cancel_task(t,
+                                                                          std::exception_ptr(get_internal_task(parent)
+                                                                                                 ->get_exception()));
         else {
             static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func()),
                                                                                        get_internal_task(parent)

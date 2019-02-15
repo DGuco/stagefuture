@@ -131,7 +131,7 @@ public:
     ~task_run_handle()
     {
         if (handle)
-            handle->vtable->cancel(handle.get(), std::make_exception_ptr(task_not_executed()));
+            handle->cancel(handle.get(), std::make_exception_ptr(task_not_executed()));
     }
 
     // Check if the handle is valid
@@ -143,7 +143,7 @@ public:
     // Run the task and release the handle
     void run()
     {
-        handle->vtable->run(handle.get());
+        handle->run(handle.get());
         handle = nullptr;
     }
 

@@ -25,8 +25,30 @@
 
 using namespace stagefuture;
 
+class A
+{
+public:
+    virtual void test() = 0;
+};
+
+class B: public A
+{
+
+};
+
+class C: public B
+{
+public:
+    void test() override
+    {
+        printf("Class c test func\n");
+    }
+};
+
 int main(int argc, char *argv[])
 {
+    C *c = new C;
+    c->test();
     int test_a = 10;
     auto task1 = stagefuture::run_async([test_a]
                                         {
