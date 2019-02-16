@@ -46,121 +46,108 @@ inline bool is_finished(task_state s)
 class task_interface
 {
 public:
-    // Destroy the function and result
-    virtual void destroy(task_base *) LIBASYNC_NOEXCEPT = 0;
-
     // Run the associated function
-    virtual void run(task_base *) LIBASYNC_NOEXCEPT = 0;
+    virtual void run() LIBASYNC_NOEXCEPT = 0;
 
     // Cancel the task with an exception
-    virtual void cancel(task_base *, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
+    virtual void cancel(std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
 
     // Schedule the task using its scheduler
-    virtual void schedule(task_base *parent, task_ptr t) = 0;
+    virtual void schedule(task_base *parent) = 0;
 };
 
 // Type-generic base task object
-struct task_base_deleter;
-struct LIBASYNC_CACHELINE_ALIGN task_base: public task_interface, ref_count_base<task_base, task_base_deleter>
+struct LIBASYNC_CACHELINE_ALIGN task_base: public task_interface,
+                                           ref_count_base<task_base, default_deleter < task_base>>
 {
-    // Task state
-    std::atomic<task_state> state;
+// Task state
+std::atomic<task_state> state;
 
-    // Whether get_task() was already called on an event_event
-    bool event_task_got_task;
+// Whether get_task() was already called on an event_event
+bool event_task_got_task;
 
-    // Vector of continuations
-    continuation_vector continuations;
+// Vector of continuations
+continuation_vector continuations;
 
-    // Use aligned memory allocation
-    static void *operator new(std::size_t size)
-    {
-        return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
-    }
-    static void operator delete(void *ptr)
-    {
-        aligned_free(ptr);
-    }
-
-    // Initialize task state
-    task_base()
-        : state(task_state::pending)
-    {}
-
-    // Check whether the task is ready and include an acquire barrier if it is
-    bool ready() const
-    {
-        return is_finished(state.load(std::memory_order_acquire));
-    }
-
-    // Run a single continuation
-    template<typename Sched>
-    void run_continuation(Sched &sched, task_ptr &&cont)
-    {
-        LIBASYNC_TRY {
-            detail::schedule_task(sched, std::move(cont));
-        } LIBASYNC_CATCH(...) {
-            // This is suboptimal, but better than letting the exception leak
-            cont->cancel(cont.get(), std::current_exception());
-        }
-    }
-
-    // Run all of the task's continuations after it has completed or canceled.
-    // The list of continuations is emptied and locked to prevent any further
-    // continuations from being added.
-    void run_continuations()
-    {
-        continuations.flush_and_lock([this](task_ptr t)
-                                     {
-                                         t->schedule(this, std::move(t));
-                                     });
-    }
-
-    // Add a continuation to this task
-    template<typename Sched>
-    void add_continuation(Sched &sched, task_ptr cont)
-    {
-        // Check for task completion
-        task_state current_state = state.load(std::memory_order_relaxed);
-        if (!is_finished(current_state)) {
-            // Try to add the task to the continuation list. This can fail only
-            // if the task has just finished, in which case we run it directly.
-            if (continuations.try_add(std::move(cont)))
-                return;
-        }
-
-        // Otherwise run the continuation directly
-        std::atomic_thread_fence(std::memory_order_acquire);
-        run_continuation(sched, std::move(cont));
-    }
-
-    // Finish the task after it has been executed and the result set
-    void finish()
-    {
-        state.store(task_state::completed, std::memory_order_release);
-        run_continuations();
-    }
-
-    // Wait for the task to finish executing
-    task_state wait()
-    {
-        task_state s = state.load(std::memory_order_acquire);
-        if (!is_finished(s)) {
-            wait_for_task(this);
-            s = state.load(std::memory_order_relaxed);
-        }
-        return s;
-    }
-};
-
-// Deleter for task_ptr
-struct task_base_deleter
+// Use aligned memory allocation
+void *operator new(std::size_t size)
 {
-    static void do_delete(task_base *p)
-    {
-        // Go through the vtable to delete p with its proper type
-        p->destroy(p);
+    return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
+}
+void operator delete(void *ptr)
+{
+    aligned_free(ptr);
+}
+
+// Initialize task state
+task_base()
+    : state(task_state::pending)
+{}
+
+// Check whether the task is ready and include an acquire barrier if it is
+bool ready() const
+{
+    return is_finished(state.load(std::memory_order_acquire));
+}
+
+// Run a single continuation
+template<typename Sched>
+void run_continuation(Sched &sched, task_ptr &&cont)
+{
+    LIBASYNC_TRY {
+        detail::schedule_task(sched, std::move(cont));
+    } LIBASYNC_CATCH(...) {
+        // This is suboptimal, but better than letting the exception leak
+        cont->cancel(std::current_exception());
     }
+}
+
+// Run all of the task's continuations after it has completed or canceled.
+// The list of continuations is emptied and locked to prevent any further
+// continuations from being added.
+void run_continuations()
+{
+    continuations.flush_and_lock([this](task_ptr t)
+                                 {
+                                     t->schedule(this);
+                                 });
+}
+
+// Add a continuation to this task
+template<typename Sched>
+void add_continuation(Sched &sched, task_ptr cont)
+{
+    // Check for task completion
+    task_state current_state = state.load(std::memory_order_relaxed);
+    if (!is_finished(current_state)) {
+        // Try to add the task to the continuation list. This can fail only
+        // if the task has just finished, in which case we run it directly.
+        if (continuations.try_add(std::move(cont)))
+            return;
+    }
+
+    // Otherwise run the continuation directly
+    std::atomic_thread_fence(std::memory_order_acquire);
+    run_continuation(sched, std::move(cont));
+}
+
+// Finish the task after it has been executed and the result set
+void finish()
+{
+    state.store(task_state::completed, std::memory_order_release);
+    run_continuations();
+}
+
+// Wait for the task to finish executing
+task_state wait()
+{
+    task_state s = state.load(std::memory_order_acquire);
+    if (!is_finished(s)) {
+        wait_for_task(this);
+        s = state.load(std::memory_order_relaxed);
+    }
+    return s;
+}
 };
 
 // Result type-specific task object
@@ -303,22 +290,17 @@ struct task_result: public task_result_holder<Result>
             LIBASYNC_RETHROW_EXCEPTION(get_exception());
     }
 
-    // Delete the task using its proper type
-    virtual void destroy(task_base *t) LIBASYNC_NOEXCEPT override
-    {
-        delete static_cast<task_result<Result> *>(t);
-    }
-
-    void run(task_base *base) LIBASYNC_NOEXCEPT override
-    {
-
-    }
-    void cancel(task_base *base, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void run() LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void cancel(std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    {
+
+    }
+
+    void schedule(task_base *parent) override
     {
 
     }
@@ -415,40 +397,33 @@ struct task_func: public task_result<Result>, func_holder<Func>
             this->destroy_func();
     }
 
-    // Delete the task using its proper type
-    virtual void destroy(task_base *t) LIBASYNC_NOEXCEPT override
-    {
-        delete static_cast<task_func<Sched, Func, Result> *>(t);
-    }
-
-    void run(task_base *base) LIBASYNC_NOEXCEPT override
+    void run() LIBASYNC_NOEXCEPT override
     {
         LIBASYNC_TRY {
             // Dispatch to execution function
-            static_cast<task_func<Sched, Func, Result> *>(base)->get_func()(base);
+            this->get_func()(this);
         } LIBASYNC_CATCH(...) {
-            cancel(base, std::current_exception());
+            cancel(std::current_exception());
         }
     }
 
-    void cancel(task_base *base, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void cancel(std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
     {
         // Destroy the function object when canceling since it won't be
         // used anymore.
-        static_cast<task_func<Sched, Func, Result> *>(base)->destroy_func();
-        static_cast<task_func<Sched, Func, Result> *>(base)->cancel_base(std::move(ptr));
+        this->destroy_func();
+        this->cancel_base(std::move(ptr));
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void schedule(task_base *parent) override
     {
-        void *sched = static_cast<task_func<Sched, Func, Result> *>(t.get())->sched;
-        parent->run_continuation(*static_cast<Sched *>(sched), std::move(t));
+        parent->run_continuation(*static_cast<Sched *>(this->sched), std::move((task_ptr)this));
     }
 
     // Cancel the task
     static void cancel_task(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT
     {
-        t->cancel(t, std::move(except));
+        t->cancel(std::move(except));
     }
 };
 

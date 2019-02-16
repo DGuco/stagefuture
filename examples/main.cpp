@@ -39,9 +39,14 @@ class B: public A
 class C: public B
 {
 public:
+    virtual ~C()
+    {
+        printf("~C\n");
+    }
     void test() override
     {
         printf("Class c test func\n");
+        delete this;
     }
 };
 
