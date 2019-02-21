@@ -26,7 +26,6 @@ namespace stagefuture
 {
 namespace detail
 {
-
 // Pseudo-void type: it takes up no space but can be moved and copied
 // 伪空类型：它不占用空间，但可以移动和复制
 struct fake_void
@@ -97,6 +96,15 @@ template<typename T>
 struct remove_task<const shared_stage_future<T>>
 {
     typedef T type;
+};
+
+template<typename T, typename F>
+struct Func
+{
+    typedef typename std::decay<F>::type decay_func;
+    typedef T type;
+    static_assert(std::is_same<typename remove_task<decltype(std::declval<decay_func>()())>::type, type>::value,
+                  "Parameter type for continuation function is invalid for parent task type");
 };
 
 // Check if a type is callable with the given arguments
