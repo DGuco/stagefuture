@@ -6,9 +6,6 @@ stagefuture
 ```
 int main(int argc, char *argv[])   
 {  
-    //testSort();  
-    C *c = new C;  
-    c->test();  
     int test_a = 10;  
     auto task1 = stagefuture::run_async([test_a]
                                         {
