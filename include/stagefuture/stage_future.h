@@ -70,7 +70,7 @@ class basic_future
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty task object");
 
         // Save a copy of internal_task because it might get moved into exec_func
-        task_base *my_internal = internal_task.get();
+        task_base * my_internal = internal_task.get();
 
         // Create continuation
         typedef continuation_traits<Parent, Func> traits;
@@ -291,6 +291,43 @@ public:
     typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
     {
         return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
+    }
+
+    template<typename Func>
+    typename detail::continuation_traits<stage_future, Func>::future_type thenApply(Func &&f)
+    {
+        return this->then_internal(get_internal_task(*this)->sched, std::forward<Func>(f), std::move(*this));
+    }
+
+    // Add a continuation to the task
+    template<typename Sched, typename Func>
+    typename detail::continuation_traits<stage_future, Func>::future_type thenApplyAsync(Sched &sched, Func &&f)
+    {
+        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+    }
+
+    template<typename Func>
+    typename detail::continuation_traits<stage_future, Func>::future_type thenApplyAsync(Func &&f)
+    {
+        return this->then_internal(::stagefuture::default_scheduler(), std::forward<Func>(f), std::move(*this));
+    }
+
+    template<typename Func>
+    stage_future<void> thenRun(Func &&f)
+    {
+        return this->then_internal(get_internal_task(*this)->sched, std::forward<Func>(f), std::move(*this));
+    }
+
+    template<typename Sched, typename Func>
+    stage_future<void> thenRunAsync(Sched &sched, Func &&f)
+    {
+        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+    }
+
+    template<typename Func>
+    stage_future<void> thenRunAsync(Func &&f)
+    {
+        return this->then_internal(::stagefuture::default_scheduler(), std::forward<Func>(f), std::move(*this));
     }
 
     // Create a shared_stage_future from this task
@@ -563,6 +600,7 @@ shedule_task(Sched &sched, Func &&f)
 
     // Avoid an expensive ref-count modification since the task isn't shared yet
     detail::get_internal_task(out)->add_ref_unlocked();
+    detail::get_internal_task(out)->sched = std::addressof(sched);
     detail::schedule_task(sched, detail::task_ptr(detail::get_internal_task(out)));
     return out;
 }
@@ -601,8 +639,8 @@ template<typename Func>
 stage_future<void> run_async(Func &&f)
 {
     //the type of the function's return value must be void
-    static_assert(std::is_void<decltype(f())>::value,
-                  "The type of Parameter func's return value for run_async is must be void");
+//    static_assert(std::is_void<decltype(f())>::value,
+//                  "The type of Parameter func's return value for run_async is must be void");
     return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
 }
 

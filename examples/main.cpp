@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     C *c = new C;
     c->test();
     int test_a = 10;
-    auto task1 = stagefuture::run_async([test_a]
+    auto task1 = stagefuture::run_async([test_a]() -> void
                                         {
                                             std::cout << "Task 1 executes asynchronously,test_a * test_a: "
                                                       << test_a * test_a << std::endl;
