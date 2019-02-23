@@ -107,7 +107,7 @@ void heap_sort(int arr[], int len)
     }
 }
 
-int main(int argc, char *argv[])
+void testSort()
 {
     int a[] = {3, 5, 3, 0, 8, 6, 1, 5, 8, 6, 2, 4, 9, 4, 7, 0, 1, 8, 9, 7, 3, 1, 2, 5, 9, 7, 4, 0, 2, 6};
     quick_sort(a, 0, sizeof(a) / sizeof(a[0]) - 1);/*这里原文第三个参数要减1否则内存越界*/
@@ -122,7 +122,11 @@ int main(int argc, char *argv[])
     for (int i = 0; i < len; i++)
         std::cout << arr[i] << ' ';
     printf("\n");
-    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    //testSort();
     C *c = new C;
     c->test();
     int test_a = 10;
