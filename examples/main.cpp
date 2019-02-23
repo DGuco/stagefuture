@@ -81,15 +81,16 @@ void max_heapify(int arr[], int start, int end)
     int dad = start;
     int son = dad * 2 + 1;
     while (son <= end) {
-        //若子节点指标在范围内才做比较
-        if (son + 1 <= end && arr[son] < arr[son + 1]) //先比较两个子节点大小，选择最大的
+        if (son + 1 <= end && arr[son] < arr[son + 1]) {
             son++;
-        if (arr[dad] > arr[son]) //如果父节点大於子节点代表调整完毕，直接跳出函数
+        }
+        if (arr[dad] > arr[son]) {
             return;
-        else { //否则交换父子内容再继续子节点和孙节点比较
+        }
+        else {
             SWAP(arr[dad], arr[son]);
             dad = son;
-            son = dad * 2 + 1;
+            son = dad + 2 + 1;
         }
     }
 }
