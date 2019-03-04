@@ -631,13 +631,12 @@ stage_future<void> run_async(Sched &sched, Func &&f)
                   "The type of Parameter func's return value for run_async is must be void");
     return shedule_task(sched, std::forward<Func>(f));
 }
-
 template<typename Func>
 stage_future<void> run_async(Func &&f)
 {
     //the type of the function's return value must be void
-//    static_assert(std::is_void<decltype(f())>::value,
-//                  "The type of Parameter func's return value for run_async is must be void");
+    static_assert(std::is_void<decltype(f())>::value,
+                  "The type of Parameter func's return value for run_async is must be void");
     return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
 }
 
