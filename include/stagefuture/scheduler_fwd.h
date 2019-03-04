@@ -43,16 +43,6 @@ public:
     virtual void schedule(task_run_handle t) = 0;
 };
 
-// Detect whether an object is a scheduler
-template<typename T, typename = decltype(std::declval<T>().schedule(std::declval<task_run_handle>()))>
-two &is_scheduler_helper(int);
-template<typename T>
-one &is_scheduler_helper(...);
-template<typename T>
-struct is_scheduler: public std::integral_constant<bool, sizeof(is_scheduler_helper<T>(0)) - 1>
-{
-};
-
 // Singleton scheduler classes
 class thread_scheduler_impl
 {
@@ -70,6 +60,7 @@ public:
 struct task_base;
 
 typedef ref_count_ptr<task_base> task_ptr;
+
 //
 //// Helper function to schedule a task using a scheduler
 void schedule_task(detail::scheduler &sched, task_ptr t);

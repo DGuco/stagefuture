@@ -29,8 +29,8 @@ namespace detail
 
 // Internal implementation of parallel_for that only accepts a partitioner
 // argument.
-template<typename Sched, typename Partitioner, typename Func>
-void internal_parallel_for(Sched &sched, Partitioner partitioner, const Func &func)
+template<typename Partitioner, typename Func>
+void internal_parallel_for(detail::scheduler &sched, Partitioner partitioner, const Func &func)
 {
     // Split the partition, run inline if no more splits are possible
     auto subpart = partitioner.split();
@@ -52,8 +52,8 @@ void internal_parallel_for(Sched &sched, Partitioner partitioner, const Func &fu
 } // namespace detail
 
 // Run a function for each element in a range
-template<typename Sched, typename Range, typename Func>
-void parallel_for(Sched &sched, Range &&range, const Func &func)
+template<typename Range, typename Func>
+void parallel_for(detail::scheduler &sched, Range &&range, const Func &func)
 {
     detail::internal_parallel_for(sched, stagefuture::to_partitioner(std::forward<Range>(range)), func);
 }
@@ -66,8 +66,8 @@ void parallel_for(Range &&range, const Func &func)
 }
 
 // Overloads with std::initializer_list
-template<typename Sched, typename T, typename Func>
-void parallel_for(Sched &sched, std::initializer_list<T> range, const Func &func)
+template<typename T, typename Func>
+void parallel_for(detail::scheduler &sched, std::initializer_list<T> range, const Func &func)
 {
     stagefuture::parallel_for(sched, stagefuture::make_range(range.begin(), range.end()), func);
 }

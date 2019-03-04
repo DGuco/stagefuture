@@ -42,11 +42,12 @@ struct parallel_invoke_internal
         t.get();
     }
 };
+
 template<std::size_t Index>
 struct parallel_invoke_internal<Index, 1>
 {
-    template<typename Sched, typename Tuple>
-    static void run(Sched &, const Tuple &args)
+    template<typename Tuple>
+    static void run(detail::scheduler &sched, const Tuple &args)
     {
         // Make sure to preserve the rvalue/lvalue-ness of the original parameter
         std::forward<typename std::tuple_element<Index, Tuple>::type>(std::get<Index>(args))();
@@ -55,24 +56,25 @@ struct parallel_invoke_internal<Index, 1>
 template<std::size_t Index>
 struct parallel_invoke_internal<Index, 0>
 {
-    template<typename Sched, typename Tuple>
-    static void run(Sched &, const Tuple &)
+    template<typename Tuple>
+    static void run(detail::scheduler &sched, const Tuple &)
     {}
 };
 
 } // namespace detail
 
 // Run several functions in parallel, optionally using the specified scheduler.
-template<typename Sched, typename... Args>
-typename std::enable_if<detail::is_scheduler<Sched>::value>::type parallel_invoke(Sched &sched, Args &&... args)
+template<typename... Args>
+void parallel_invoke(detail::scheduler &sched, Args &&... args)
 {
     detail::parallel_invoke_internal<0, sizeof...(Args)>::run(sched,
                                                               std::forward_as_tuple(std::forward<Args>(args)...));
 }
+
 template<typename... Args>
 void parallel_invoke(Args &&... args)
 {
-    stagefuture::parallel_invoke(::stagefuture::default_scheduler(), std::forward<Args>(args)...);
+    detail::parallel_invoke_internal<0, sizeof...(Args)>::run(::stagefuture::default_scheduler(),
+                                                              std::forward_as_tuple(std::forward<Args>(args)...));
 }
-
 } // namespace stagefuture
