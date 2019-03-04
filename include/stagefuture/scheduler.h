@@ -81,10 +81,10 @@ public:
         // Make sure the function type is callable
         static_assert(detail::is_callable<Func()>::value, "Invalid function type passed to on_finish()");
 
-        auto cont = new detail::task_func<typename std::remove_reference<decltype(inline_scheduler())>::type,
-                                          wait_exec_func < typename std::decay<Func>::type>,
-            detail::fake_void>(std::forward<Func>(func));
-        cont->sched = std::addressof(inline_scheduler());
+        auto
+        cont = new detail::task_func<wait_exec_func < typename std::decay<Func>::type>,
+            detail::fake_void > (std::forward<Func>(func));
+        cont->sched = (detail::scheduler *) std::addressof(inline_scheduler());
         handle->add_continuation(inline_scheduler(), detail::task_ptr(cont));
     }
 };
@@ -106,11 +106,11 @@ struct LIBASYNC_EXPORT_EXCEPTION task_not_executed
 // Task handle used in scheduler, acts as a unique_ptr to a task object
 class task_run_handle
 {
+private:
     detail::task_ptr handle;
-
+public:
     // Allow construction in schedule_task()
-    template<typename Sched>
-    friend void detail::schedule_task(Sched &sched, detail::task_ptr t);
+    friend void detail::schedule_task(detail::scheduler &sched, detail::task_ptr t);
     explicit task_run_handle(detail::task_ptr t)
         : handle(std::move(t))
     {}
@@ -172,10 +172,8 @@ namespace detail
 {
 
 // Schedule a task for execution using its scheduler
-template<typename Sched>
-void schedule_task(Sched &sched, task_ptr t)
+inline void schedule_task(detail::scheduler &sched, task_ptr t)
 {
-    static_assert(is_scheduler<Sched>::value, "Type is not a valid scheduler");
     sched.schedule(task_run_handle(std::move(t)));
 }
 

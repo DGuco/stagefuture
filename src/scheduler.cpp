@@ -129,7 +129,7 @@ static wait_handler get_thread_wait_handler()
 }
 
 // Wait for a task to complete
-void wait_for_task(task_base *wait_task)
+void wait_for_task(task_base * wait_task)
 {
     // Dispatch to the current thread's wait handler
     wait_handler thread_wait_handler = get_thread_wait_handler();
@@ -177,6 +177,16 @@ class default_scheduler_impl: public threadpool_scheduler
 public:
     default_scheduler_impl()
         : threadpool_scheduler(get_num_threads())
+    {}
+};
+
+// The default scheduler is just a thread pool which can be configured
+// using environment variables.
+class signle_thread_scheduler_impl: public threadpool_scheduler
+{
+public:
+    signle_thread_scheduler_impl()
+        : threadpool_scheduler(1)
     {}
 };
 

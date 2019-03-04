@@ -64,27 +64,27 @@ class basic_future
     }
 
     // Common code for then()
-    template<typename Sched, typename Func, typename Parent>
-    typename continuation_traits<Parent, Func>::future_type then_internal(Sched &sched, Func &&f, Parent &&parent) const
+    template<typename Func, typename Parent>
+    typename continuation_traits<Parent, Func>::future_type
+    then_internal(detail::scheduler &sched, Func &&f, Parent &&parent) const
     {
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty task object");
 
         // Save a copy of internal_task because it might get moved into exec_func
-        task_base * my_internal = internal_task.get();
+        task_base *my_internal = internal_task.get();
 
         // Create continuation
         typedef continuation_traits<Parent, Func> traits;
         typedef typename void_to_fake_void<typename traits::future_type::result_type>::type cont_internal_result;
-        typedef continuation_exec_func<Sched,
-                                       typename std::decay<Parent>::type,
+        typedef continuation_exec_func<typename std::decay<Parent>::type,
                                        cont_internal_result,
                                        typename traits::decay_func,
                                        traits::is_value_cont::value,
                                        is_task<typename traits::result_type>::value> exec_func;
         typename traits::future_type cont;
         set_internal_task(cont,
-                          task_ptr(new task_func<Sched, exec_func, cont_internal_result>(std::forward<Func>(f),
-                                                                                         std::forward<Parent>(parent))));
+                          task_ptr(new task_func<exec_func, cont_internal_result>(std::forward<Func>(f),
+                                                                                  std::forward<Parent>(parent))));
 
         // Add the continuation to this task
         // Avoid an expensive ref-count modification since the task isn't shared yet
@@ -455,7 +455,7 @@ public:
 };
 
 // Task type returned by local_spawn()
-template<typename Sched, typename Func>
+template<typename Func>
 class local_future
 {
     // Make sure the function type is callable
@@ -467,23 +467,22 @@ class local_future
     typedef typename detail::void_to_fake_void<result_type>::type internal_result;
 
     // Task execution function type
-    typedef detail::root_exec_func<Sched,
-                                   internal_result,
+    typedef detail::root_exec_func<internal_result,
                                    decay_func,
                                    detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
 
     // Task object embedded directly. The ref-count is initialized to 1 so it
     // will never be freed using delete, only when the local_future is destroyed.
-    detail::task_func<Sched, exec_func, internal_result> internal_task;
+    detail::task_func<exec_func, internal_result> internal_task;
 
     // Friend access for local_spawn
-    template<typename S, typename F>
-    friend local_future<S, F> local_spawn(S &sched, F &&f);
     template<typename F>
-    friend local_future<detail::default_scheduler_type, F> local_spawn(F &&f);
+    friend local_future<F> local_spawn(detail::scheduler &sched, F &&f);
+    template<typename F>
+    friend local_future<F> local_spawn(F &&f);
 
     // Constructor, used by local_spawn
-    local_future(Sched &sched, Func &&f)
+    local_future(detail::scheduler &sched, Func &&f)
         : internal_task(std::forward<Func>(f))
     {
         // Avoid an expensive ref-count modification since the task isn't shared yet
@@ -575,9 +574,9 @@ template<typename T>
 stage_future<T> make_exception_task(std::exception_ptr except);
 /////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
 
-template<typename Sched, typename Func>
+template<typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-shedule_task(Sched &sched, Func &&f)
+shedule_task(detail::scheduler &sched, Func &&f)
 {
     // Using result_of in the function return type to work around bugs in the Intel
     // C++ compiler.
@@ -588,14 +587,12 @@ shedule_task(Sched &sched, Func &&f)
     // Create task
     typedef typename detail::void_to_fake_void<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type>::type
         internal_result;
-    typedef detail::root_exec_func<Sched,
-                                   internal_result,
+    typedef detail::root_exec_func<internal_result,
                                    decay_func,
                                    detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
     stage_future<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
     detail::set_internal_task(out,
-                              detail::task_ptr(new detail::task_func<Sched,
-                                                                     exec_func,
+                              detail::task_ptr(new detail::task_func<exec_func,
                                                                      internal_result>(std::forward<Func>(f))));
 
     // Avoid an expensive ref-count modification since the task isn't shared yet
@@ -695,8 +692,8 @@ stage_future<T> make_exception_task(std::exception_ptr except)
 // joins on destruction. Because local_future is not movable, the result must
 // be captured in a reference, like this:
 // auto&& x = local_spawn(...);
-template<typename Sched, typename Func>
-local_future<Sched, Func> local_spawn(Sched &sched, Func &&f)
+template<typename Func>
+local_future<Func> local_spawn(detail::scheduler &sched, Func &&f)
 {
     // Since local_future is not movable, we construct it in-place and let the
     // caller extend the lifetime of the returned object using a reference.
@@ -706,7 +703,7 @@ template<typename Func>
 #ifdef __GNUC__
 __attribute__((warn_unused_result))
 #endif
-local_future<detail::default_scheduler_type, Func> local_spawn(Func &&f)
+local_future<Func> local_spawn(Func &&f)
 {
     return {::stagefuture::default_scheduler(), std::forward<Func>(f)};
 }

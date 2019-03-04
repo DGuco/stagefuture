@@ -31,8 +31,8 @@ namespace detail
 template<std::size_t Start, std::size_t Count>
 struct parallel_invoke_internal
 {
-    template<typename Sched, typename Tuple>
-    static void run(Sched &sched, const Tuple &args)
+    template<typename Tuple>
+    static void run(detail::scheduler &sched, const Tuple &args)
     {
         auto &&t = stagefuture::local_spawn(sched, [&sched, &args]
         {

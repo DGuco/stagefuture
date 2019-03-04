@@ -37,6 +37,12 @@ class threadpool_scheduler;
 namespace detail
 {
 
+class scheduler
+{
+public:
+    virtual void schedule(task_run_handle t) = 0;
+};
+
 // Detect whether an object is a scheduler
 template<typename T, typename = decltype(std::declval<T>().schedule(std::declval<task_run_handle>()))>
 two &is_scheduler_helper(int);
@@ -53,20 +59,20 @@ class thread_scheduler_impl
 public:
     LIBASYNC_EXPORT static void schedule(task_run_handle t);
 };
-class inline_scheduler_impl
+
+class inline_scheduler_impl: public detail::scheduler
 {
 public:
-    static void schedule(task_run_handle t);
+    void schedule(task_run_handle t);
 };
 
 // Reference counted pointer to task data
 struct task_base;
 
 typedef ref_count_ptr<task_base> task_ptr;
-
-// Helper function to schedule a task using a scheduler
-template<typename Sched>
-void schedule_task(Sched &sched, task_ptr t);
+//
+//// Helper function to schedule a task using a scheduler
+void schedule_task(detail::scheduler &sched, task_ptr t);
 
 // Wait for the given task to finish. This will call the wait handler currently
 // active for this thread, which causes the thread to sleep by default.
@@ -112,7 +118,7 @@ inline threadpool_scheduler &default_scheduler()
 
 // Scheduler that holds a list of tasks which can then be explicitly executed
 // by a thread. Both adding and running tasks are thread-safe operations.
-class fifo_scheduler
+class fifo_scheduler: public detail::scheduler
 {
     struct internal_data;
     std::unique_ptr<internal_data> impl;
@@ -134,7 +140,7 @@ public:
 // Scheduler that runs tasks in a work-stealing thread pool of the given size.
 // Note that destroying the thread pool before all tasks have completed may
 // result in some tasks not being executed.
-class threadpool_scheduler
+class threadpool_scheduler: public detail::scheduler
 {
     std::unique_ptr<detail::threadpool_data> impl;
 
