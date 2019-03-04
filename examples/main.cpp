@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
                                                          << std::endl;
                                                return 42;
                                            });
-    auto task3 = task2.then([](int value) -> int
+    auto task3 = task2.thenApply([](int value) -> int
                             {
                                 std::cout << "Task 3 executes after stage_future 2, which returned "
                                           << value << std::endl;
