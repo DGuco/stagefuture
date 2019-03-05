@@ -157,12 +157,4 @@ public:
     // Schedule a task to be run in the thread pool
     LIBASYNC_EXPORT void schedule(task_run_handle t);
 };
-
-namespace detail
-{
-
-// Work-around for Intel compiler handling decltype poorly in function returns
-typedef std::remove_reference<decltype(::stagefuture::default_scheduler())>::type default_scheduler_type;
-
-} // namespace detail
 } // namespace stagefuture
