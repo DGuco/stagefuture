@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
     c->test();
     int test_a = 10;
     threadpool_scheduler scheduler(1);
+    int a = 0;
     stage_future<void> task1 = stagefuture::run_async(scheduler,
                                                       [test_a]() -> void
                                                       {
@@ -139,7 +140,7 @@ int main(int argc, char *argv[])
                                                               << "Task 1 executes asynchronously,test_a * test_a: "
                                                               << test_a * test_a << std::endl;
                                                       });
-    
+
     stage_future<int> task2 = stagefuture::supply_async(scheduler,
                                                         []() -> int
                                                         {
@@ -148,6 +149,7 @@ int main(int argc, char *argv[])
                                                                 << std::endl;
                                                             return 42;
                                                         });
+
     stage_future<int> task3 = task2.thenApplyAsync(scheduler,
                                                    [](int value) -> int
                                                    {
@@ -158,7 +160,7 @@ int main(int argc, char *argv[])
                                                    });
     auto task4 = stagefuture::when_all(task1, task3);
     auto
-        task5 = task4.thenApplyAsync([](std::tuple<stagefuture::stage_future<void>,
+        task5 = task4.then([](std::tuple<stagefuture::stage_future<void>,
                                                    stagefuture::stage_future<int>>
                                         results)
                                      {
