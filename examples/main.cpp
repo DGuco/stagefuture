@@ -124,27 +124,30 @@ void testSort()
     printf("\n");
 }
 
+using namespace stagefuture;
 int main(int argc, char *argv[])
 {
     //testSort();
     C *c = new C;
     c->test();
     int test_a = 10;
-    stagefuture::threadpool_scheduler scheduler(1);
-    auto task1 = stagefuture::run_async(scheduler,
-                                        [test_a]() -> void
-                                        {
-                                            std::cout << "Task 1 executes asynchronously,test_a * test_a: "
-                                                      << test_a * test_a << std::endl;
-                                        });
-    auto task2 = stagefuture::supply_async(scheduler,
-                                           []() -> int
-                                           {
-                                               std::cout << "Task 2 executes in parallel with stage_future 1"
-                                                         << std::endl;
-                                               return 42;
-                                           });
-    auto task3 = task2.thenApplyAsync(scheduler,
+    threadpool_scheduler scheduler(1);
+    stage_future<void> task1 = stagefuture::run_async(scheduler,
+                                                                   [test_a]() -> void
+                                                                   {
+                                                                       std::cout
+                                                                           << "Task 1 executes asynchronously,test_a * test_a: "
+                                                                           << test_a * test_a << std::endl;
+                                                                   });
+    stage_future<int> task2 = stagefuture::supply_async(scheduler,
+                                                                     []() -> int
+                                                                     {
+                                                                         std::cout
+                                                                             << "Task 2 executes in parallel with stage_future 1"
+                                                                             << std::endl;
+                                                                         return 42;
+                                                                     });
+    stage_future<int> task3 = task2.thenApplyAsync(scheduler,
                                       [](int value) -> int
                                       {
                                           std::cout << "Task 3 executes after stage_future 2, which returned "
