@@ -301,7 +301,8 @@ public:
 
     // Add a continuation to the task
     template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type thenApplyAsync(detail::scheduler &sched, Func &&f)
+    typename detail::continuation_traits<stage_future, Func>::future_type
+    thenApplyAsync(detail::scheduler &sched, Func &&f)
     {
         return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
     }
@@ -313,19 +314,19 @@ public:
     }
 
     template<typename Func>
-    stage_future<void> thenRun(Func &&f)
+    stage_future<void> thenAccept(Func &&f)
     {
         return this->then_internal(*get_internal_task(*this)->sched, std::forward<Func>(f), std::move(*this));
     }
 
     template<typename Func>
-    stage_future<void> thenRunAsync(detail::scheduler &sched, Func &&f)
+    stage_future<void> thenAcceptAsync(detail::scheduler &sched, Func &&f)
     {
         return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
     }
 
     template<typename Func>
-    stage_future<void> thenRunAsync(Func &&f)
+    stage_future<void> thenAcceptAsync(Func &&f)
     {
         return this->then_internal(::stagefuture::default_scheduler(), std::forward<Func>(f), std::move(*this));
     }
