@@ -158,15 +158,15 @@ int main(int argc, char *argv[])
                                                            << value << std::endl;
                                                        return value * 3;
                                                    });
-    auto task4 = stagefuture::when_all(task1, task3);
-    auto
-        task5 = task4.then([](std::tuple<stagefuture::stage_future<void>,
-                                                   stagefuture::stage_future<int>>
-                                        results)
-                                     {
-                                         std::cout << "Task 5 executes after tasks 1 and 3. Task 3 returned "
-                                                   << std::get<1>(results).get() << std::endl;
-                                     });
+    stage_future<std::tuple<stagefuture::stage_future<void>,
+                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
+    stage_future<void> task5 = task4.thenAcceptAsync([](std::tuple<stagefuture::stage_future<void>,
+                                                                   stagefuture::stage_future<int>> results)
+                                                     {
+                                                         std::cout
+                                                             << "Task 5 executes after tasks 1 and 3. Task 3 returned "
+                                                             << std::get<1>(results).get() << std::endl;
+                                                     });
 
     task5.get();
     std::cout << "Task 5 has completed" << std::endl;

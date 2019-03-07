@@ -299,7 +299,12 @@ public:
         typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
         //the type of the function's return value must not be void
         static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
-        return this->then_internal(*get_internal_task(*this)->sched, std::forward<Func>(f), std::move(*this));
+        detail::scheduler *pScheduler = get_internal_task(*this)->sched;
+        //如果父亲任务的sched为null则
+        if (pScheduler == nullptr) {
+            pScheduler = &inline_scheduler();
+        }
+        return this->then_internal(*pScheduler, std::forward<Func>(f), std::move(*this));
     }
 
     // Add a continuation to the task
@@ -328,7 +333,12 @@ public:
         typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
         //the type of the function's return value must not be void
         static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
-        return this->then_internal(*get_internal_task(*this)->sched, std::forward<Func>(f), std::move(*this));
+        detail::scheduler *pScheduler = get_internal_task(*this)->sched;
+        //如果父亲任务的sched为null则
+        if (pScheduler == nullptr) {
+            pScheduler = &inline_scheduler();
+        }
+        return this->then_internal(*pScheduler, std::forward<Func>(f), std::move(*this));
     }
 
     template<typename Func>

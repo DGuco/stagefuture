@@ -43,13 +43,6 @@ public:
     virtual void schedule(task_run_handle t) = 0;
 };
 
-// Singleton scheduler classes
-class thread_scheduler_impl
-{
-public:
-    LIBASYNC_EXPORT static void schedule(task_run_handle t);
-};
-
 class inline_scheduler_impl: public detail::scheduler
 {
 public:
@@ -78,15 +71,6 @@ struct threadpool_data;
 inline detail::inline_scheduler_impl &inline_scheduler()
 {
     static detail::inline_scheduler_impl instance;
-    return instance;
-}
-
-// Run a task in a separate thread. Note that this scheduler does not wait for
-// threads to finish at process exit. You must ensure that all threads finish
-// before ending the process.
-inline detail::thread_scheduler_impl &thread_scheduler()
-{
-    static detail::thread_scheduler_impl instance;
     return instance;
 }
 

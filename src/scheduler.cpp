@@ -129,7 +129,7 @@ static wait_handler get_thread_wait_handler()
 }
 
 // Wait for a task to complete
-void wait_for_task(task_base * wait_task)
+void wait_for_task(task_base *wait_task)
 {
     // Dispatch to the current thread's wait handler
     wait_handler thread_wait_handler = get_thread_wait_handler();
@@ -189,18 +189,6 @@ public:
         : threadpool_scheduler(1)
     {}
 };
-
-// Thread scheduler implementation
-void thread_scheduler_impl::schedule(task_run_handle t)
-{
-    // A shared_ptr is used here because not all implementations of
-    // std::thread support move-only objects.
-    std::thread([](const std::shared_ptr<task_run_handle> &t)
-                {
-                    t->run();
-                }, std::make_shared<task_run_handle>(std::move(t))).detach();
-}
-
 } // namespace detail
 
 threadpool_scheduler &default_threadpool_scheduler()
