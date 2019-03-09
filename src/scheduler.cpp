@@ -180,20 +180,25 @@ public:
     {}
 };
 
-// The default scheduler is just a thread pool which can be configured
-// using environment variables.
-class signle_thread_scheduler_impl: public threadpool_scheduler
+class inline_scheduler_impl: public detail::scheduler
 {
 public:
-    signle_thread_scheduler_impl()
-        : threadpool_scheduler(1)
-    {}
+    // Inline scheduler implementation
+    void schedule(task_run_handle t)
+    {
+        t.run();
+    }
 };
 } // namespace detail
 
 threadpool_scheduler &default_threadpool_scheduler()
 {
     return detail::singleton<detail::default_scheduler_impl>::get_instance();
+}
+
+detail::scheduler &inline_scheduler()
+{
+    return detail::singleton<detail::inline_scheduler_impl>::get_instance();
 }
 
 // FIFO scheduler implementation

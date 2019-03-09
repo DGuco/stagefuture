@@ -28,7 +28,6 @@ namespace stagefuture
 // Forward declarations
 class task_run_handle;
 class threadpool_scheduler;
-
 // Scheduler interface:
 // A scheduler is any type that implements this function:
 // void schedule(stagefuture::task_run_handle t);
@@ -41,12 +40,6 @@ class scheduler
 {
 public:
     virtual void schedule(task_run_handle t) = 0;
-};
-
-class inline_scheduler_impl: public detail::scheduler
-{
-public:
-    void schedule(task_run_handle t);
 };
 
 // Reference counted pointer to task data
@@ -67,17 +60,12 @@ struct threadpool_data;
 
 } // namespace detail
 
-// Run a task in the current thread as soon as it is scheduled
-inline detail::inline_scheduler_impl &inline_scheduler()
-{
-    static detail::inline_scheduler_impl instance;
-    return instance;
-}
-
 // Built-in thread pool scheduler with a size that is configurable from the
 // LIBASYNC_NUM_THREADS environment variable. If that variable does not exist
 // then the number of CPUs in the system is used instead.
 LIBASYNC_EXPORT threadpool_scheduler &default_threadpool_scheduler();
+// Run a task in the current thread as soon as it is scheduled
+LIBASYNC_EXPORT detail::scheduler &inline_scheduler();
 
 // Default scheduler that is used when one isn't specified. This defaults to
 // default_threadpool_scheduler(), but can be overriden by defining
@@ -122,7 +110,7 @@ class threadpool_scheduler: public detail::scheduler
 public:
     //forbidden copy construct
     threadpool_scheduler(const threadpool_scheduler &other) = delete;
-    //forbidden operator =
+    virtual //forbidden operator =
     threadpool_scheduler &operator=(const threadpool_scheduler &other) = delete;
     LIBASYNC_EXPORT threadpool_scheduler(threadpool_scheduler &&other);
 
@@ -136,9 +124,19 @@ public:
                                          std::function<void()> &&postrun_);
 
     // Destroy the thread pool, tasks that haven't been started are dropped
-    LIBASYNC_EXPORT ~threadpool_scheduler();
+    LIBASYNC_EXPORT virtual ~threadpool_scheduler();
 
     // Schedule a task to be run in the thread pool
     LIBASYNC_EXPORT void schedule(task_run_handle t);
+};
+
+// The default scheduler is just a thread pool which can be configured
+// using environment variables.
+class single_thread_scheduler: public threadpool_scheduler
+{
+public:
+    LIBASYNC_EXPORT single_thread_scheduler();
+    LIBASYNC_EXPORT single_thread_scheduler(std::function<void()> &&prerun_, std::function<void()> &&postrun_);
+    LIBASYNC_EXPORT ~single_thread_scheduler() override;
 };
 } // namespace stagefuture

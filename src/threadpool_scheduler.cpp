@@ -446,6 +446,20 @@ void threadpool_scheduler::schedule(task_run_handle t)
     }
 }
 
+single_thread_scheduler::single_thread_scheduler()
+    : threadpool_scheduler(1)
+{}
+
+single_thread_scheduler::single_thread_scheduler(std::function<void()> &&prerun_,
+                                                 std::function<void()> &&postrun_)
+    : threadpool_scheduler(1, std::move(prerun_), std::move(postrun_))
+{
+
+}
+single_thread_scheduler::~single_thread_scheduler()
+{
+
+}
 } // namespace stagefuture
 
 #ifndef LIBASYNC_STATIC

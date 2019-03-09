@@ -170,18 +170,10 @@ public:
 
 namespace detail
 {
-
 // Schedule a task for execution using its scheduler
 inline void schedule_task(detail::scheduler &sched, task_ptr t)
 {
     sched.schedule(task_run_handle(std::move(t)));
 }
-
-// Inline scheduler implementation
-inline void inline_scheduler_impl::schedule(task_run_handle t)
-{
-    t.run();
-}
-
 } // namespace detail
 } // namespace stagefuture
