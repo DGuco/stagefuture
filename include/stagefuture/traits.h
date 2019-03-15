@@ -164,9 +164,7 @@ struct continuation_traits
                                       Parent>::type param_type;
     typedef decltype(detail::fake_void_to_void(detail::invoke_fake_void(std::declval<decay_func>(),
                                                                         std::declval<param_type>()))) result_type;
-    typedef stage_future<typename
-
-    <result_type>::type> future_type;
+    typedef stage_future<typename remove_task<result_type>::type> future_type;
 };
 
 } // namespace detail
