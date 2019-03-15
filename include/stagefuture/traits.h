@@ -98,15 +98,6 @@ struct remove_task<const shared_stage_future<T>>
     typedef T type;
 };
 
-template<typename T, typename F>
-struct Func
-{
-    typedef typename std::decay<F>::type decay_func;
-    typedef T type;
-    static_assert(std::is_same<typename remove_task<decltype(std::declval<decay_func>()())>::type, type>::value,
-                  "Parameter type for continuation function is invalid for parent task type");
-};
-
 // Check if a type is callable with the given arguments
 typedef char one[1];
 
@@ -173,7 +164,9 @@ struct continuation_traits
                                       Parent>::type param_type;
     typedef decltype(detail::fake_void_to_void(detail::invoke_fake_void(std::declval<decay_func>(),
                                                                         std::declval<param_type>()))) result_type;
-    typedef stage_future<typename remove_task<result_type>::type> future_type;
+    typedef stage_future<typename
+
+    <result_type>::type> future_type;
 };
 
 } // namespace detail
