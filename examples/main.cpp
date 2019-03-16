@@ -124,6 +124,24 @@ void testSort()
     printf("\n");
 }
 
+template<typename Res, typename ... Args>
+Res call(std::function<Res(Args...)> func)
+{
+    return func();
+}
+
+template<typename Res, typename Par>
+void call(void *func)
+{
+    if (std::is_void<Par>::value) {
+        std::function<Res()> fff = *(std::function<Res()> *) func;
+        call(fff);
+    }
+    else {
+        std::function<Res(Par)> fff = *(std::function<Res(Par)> *) func;
+        call(fff);
+    }
+}
 using namespace stagefuture;
 int main(int argc, char *argv[])
 {
@@ -131,6 +149,16 @@ int main(int argc, char *argv[])
     C *c = new C;
     c->test();
     int test_a = 10;
+    std::function<int()> func = [test_a]() -> int
+    {
+        std::cout
+            << "Task 1 executes asynchronously,test_a * test_a: "
+            << test_a * test_a
+            << " thread id " << std::this_thread::get_id()
+            << std::endl;
+        return 0;
+    };
+    call(func);
     threadpool_scheduler scheduler(1);
     single_thread_scheduler singleThreadScheduler;
     int a = 0;
