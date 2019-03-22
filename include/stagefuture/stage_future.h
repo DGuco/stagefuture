@@ -579,16 +579,16 @@ public:
 
 /////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
 // supply_async a function asynchronously return not void value with the parameter sched
-template<typename Sched, typename Func>
+template<typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-supply_async(Sched &sched, Func &&f);
+supply_async(detail::scheduler &sched, Func &&f);
 // supply_async a function asynchronously return not void value with default sched
 template<typename Func>
 decltype(supply_async(::stagefuture::default_scheduler(), std::declval<Func>()))
 supply_async(Func &&f);
 // run_async a function asynchronously return void value with the parameter sched
-template<typename Sched, typename Func>
-stage_future<void> run_async(Sched &sched, Func &&f);
+template<typename Func>
+stage_future<void> run_async(detail::scheduler &sched, Func &&f);
 // run_async a function asynchronously return void value with default sched
 template<typename Func>
 stage_future<void> run_async(Func &&f);
@@ -632,9 +632,9 @@ shedule_task(detail::scheduler &sched, Func &&f)
 }
 
 // supply_async a function asynchronously return not void value with the parameter sched
-template<typename Sched, typename Func>
+template<typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-supply_async(Sched &sched, Func &&f)
+supply_async(detail::scheduler &sched, Func &&f)
 {
     typedef
     typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
@@ -653,8 +653,8 @@ supply_async(Func &&f)
     return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
 }
 
-template<typename Sched, typename Func>
-stage_future<void> run_async(Sched &sched, Func &&f)
+template<typename Func>
+stage_future<void> run_async(detail::scheduler &sched, Func &&f)
 {
     typedef
     typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
