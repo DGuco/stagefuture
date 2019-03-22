@@ -29,19 +29,7 @@ using namespace stagefuture;
 int main(int argc, char *argv[])
 {
     //testSort();
-    C *c = new C;
-    c->test();
     int test_a = 10;
-    std::function<int()> func = [test_a]() -> int
-    {
-        std::cout
-            << "Task 1 executes asynchronously,test_a * test_a: "
-            << test_a * test_a
-            << " thread id " << std::this_thread::get_id()
-            << std::endl;
-        return 0;
-    };
-    call(func);
     threadpool_scheduler scheduler(1);
     single_thread_scheduler singleThreadScheduler;
     int a = 0;
