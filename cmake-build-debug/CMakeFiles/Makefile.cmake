@@ -41,6 +41,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.13.2/CMakeSystem.cmake"
   "../examples/CMakeLists.txt"
   "../stagefuture.in"
+  "../test/CMakeLists.txt"
   )
 
 # The corresponding makefile is:
@@ -56,10 +57,12 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CPackSourceConfig.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "examples/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "test/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/stagefuture.dir/DependInfo.cmake"
   "examples/CMakeFiles/example.dir/DependInfo.cmake"
+  "test/CMakeFiles/test.dir/DependInfo.cmake"
   )

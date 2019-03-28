@@ -118,6 +118,7 @@ public:
 public:
     // Movable but not copyable
     task_run_handle() = default;
+    task_run_handle(const task_run_handle &other) = delete;
     task_run_handle(task_run_handle &&other) LIBASYNC_NOEXCEPT
         : handle(std::move(other.handle))
     {}

@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp" "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/stagefuture.dir/src/scheduler.cpp.o"
   "/home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp" "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o"
+  "/home/dguco/workspace/cpp/stagefuture/test/main.cpp" "/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles/stagefuture.dir/test/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

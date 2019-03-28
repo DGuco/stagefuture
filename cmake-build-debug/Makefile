@@ -204,6 +204,19 @@ example/fast:
 	$(MAKE) -f examples/CMakeFiles/example.dir/build.make examples/CMakeFiles/example.dir/build
 .PHONY : example/fast
 
+#=============================================================================
+# Target rules for targets named test
+
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test
+.PHONY : test
+
+# fast build rule for target.
+test/fast:
+	$(MAKE) -f test/CMakeFiles/test.dir/build.make test/CMakeFiles/test.dir/build
+.PHONY : test/fast
+
 src/scheduler.o: src/scheduler.cpp.o
 
 .PHONY : src/scheduler.o
@@ -258,6 +271,33 @@ src/threadpool_scheduler.cpp.s:
 	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.s
 .PHONY : src/threadpool_scheduler.cpp.s
 
+test/main.o: test/main.cpp.o
+
+.PHONY : test/main.o
+
+# target to build an object file
+test/main.cpp.o:
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/test/main.cpp.o
+.PHONY : test/main.cpp.o
+
+test/main.i: test/main.cpp.i
+
+.PHONY : test/main.i
+
+# target to preprocess a source file
+test/main.cpp.i:
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/test/main.cpp.i
+.PHONY : test/main.cpp.i
+
+test/main.s: test/main.cpp.s
+
+.PHONY : test/main.s
+
+# target to generate assembly for a file
+test/main.cpp.s:
+	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/test/main.cpp.s
+.PHONY : test/main.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -274,12 +314,16 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... list_install_components"
 	@echo "... example"
+	@echo "... test"
 	@echo "... src/scheduler.o"
 	@echo "... src/scheduler.i"
 	@echo "... src/scheduler.s"
 	@echo "... src/threadpool_scheduler.o"
 	@echo "... src/threadpool_scheduler.i"
 	@echo "... src/threadpool_scheduler.s"
+	@echo "... test/main.o"
+	@echo "... test/main.i"
+	@echo "... test/main.s"
 .PHONY : help
 
 

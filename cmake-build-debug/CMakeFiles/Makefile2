@@ -71,7 +71,7 @@ CMAKE_BINARY_DIR = /home/dguco/workspace/cpp/stagefuture/cmake-build-debug
 CMakeFiles/stagefuture.dir/all:
 	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/depend
 	$(MAKE) -f CMakeFiles/stagefuture.dir/build.make CMakeFiles/stagefuture.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles --progress-num=3,4,5 "Built target stagefuture"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles --progress-num=3,4,5,6 "Built target stagefuture"
 .PHONY : CMakeFiles/stagefuture.dir/all
 
 # Include target in all.
@@ -81,7 +81,7 @@ all: CMakeFiles/stagefuture.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/stagefuture.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/stagefuture.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/stagefuture.dir/rule
@@ -136,7 +136,7 @@ all: examples/CMakeFiles/example.dir/all
 
 # Build rule for subdir invocation for target.
 examples/CMakeFiles/example.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 examples/CMakeFiles/example.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 0
 .PHONY : examples/CMakeFiles/example.dir/rule
@@ -153,6 +153,61 @@ examples/CMakeFiles/example.dir/clean:
 
 # clean rule for target.
 clean: examples/CMakeFiles/example.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory test
+
+# Convenience name for "all" pass in the directory.
+test/all: test/CMakeFiles/test.dir/all
+
+.PHONY : test/all
+
+# Convenience name for "clean" pass in the directory.
+test/clean: test/CMakeFiles/test.dir/clean
+
+.PHONY : test/clean
+
+# Convenience name for "preinstall" pass in the directory.
+test/preinstall:
+
+.PHONY : test/preinstall
+
+#=============================================================================
+# Target rules for target test/CMakeFiles/test.dir
+
+# All Build rule for target.
+test/CMakeFiles/test.dir/all:
+	$(MAKE) -f test/CMakeFiles/test.dir/build.make test/CMakeFiles/test.dir/depend
+	$(MAKE) -f test/CMakeFiles/test.dir/build.make test/CMakeFiles/test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles --progress-num=7,8 "Built target test"
+.PHONY : test/CMakeFiles/test.dir/all
+
+# Include target in all.
+all: test/CMakeFiles/test.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+test/CMakeFiles/test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 test/CMakeFiles/test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/CMakeFiles 0
+.PHONY : test/CMakeFiles/test.dir/rule
+
+# Convenience name for target.
+test: test/CMakeFiles/test.dir/rule
+
+.PHONY : test
+
+# clean rule for target.
+test/CMakeFiles/test.dir/clean:
+	$(MAKE) -f test/CMakeFiles/test.dir/build.make test/CMakeFiles/test.dir/clean
+.PHONY : test/CMakeFiles/test.dir/clean
+
+# clean rule for target.
+clean: test/CMakeFiles/test.dir/clean
 
 .PHONY : clean
 

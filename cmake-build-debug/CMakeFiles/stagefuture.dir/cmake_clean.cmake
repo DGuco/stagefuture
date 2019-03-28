@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/stagefuture.dir/src/scheduler.cpp.o"
   "CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o"
+  "CMakeFiles/stagefuture.dir/test/main.cpp.o"
   "libstagefuture.pdb"
   "libstagefuture.so"
 )

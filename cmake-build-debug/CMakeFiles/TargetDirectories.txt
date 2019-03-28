@@ -16,3 +16,12 @@
 /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/examples/CMakeFiles/edit_cache.dir
 /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/examples/CMakeFiles/rebuild_cache.dir
 /home/dguco/workspace/cpp/stagefuture/cmake-build-debug/examples/CMakeFiles/list_install_components.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/install/strip.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/install.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/package.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/package_source.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/install/local.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/test.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/list_install_components.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/edit_cache.dir
+/home/dguco/workspace/cpp/stagefuture/cmake-build-debug/test/CMakeFiles/rebuild_cache.dir

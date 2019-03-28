@@ -21,6 +21,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(stagefuture C CXX)
 add_subdirectory(examples)
+add_subdirectory(test)
 
 option(BUILD_SHARED_LIBS "Build stagefuture as a shared library" ON)
 option(USE_CXX_EXCEPTIONS "Enable C++ exception support" ON)
@@ -59,7 +60,7 @@ set(STAGE_FUTURE_SRC
         ${PROJECT_SOURCE_DIR}/src/task_wait_event.h
         ${PROJECT_SOURCE_DIR}/src/threadpool_scheduler.cpp
         ${PROJECT_SOURCE_DIR}/src/work_steal_queue.h
-        )
+        test/main.cpp)
 source_group(include FILES ${PROJECT_SOURCE_DIR}/include/stagefuture.h ${STAGE_FUTURE_INCLUDE})
 source_group(src FILES ${STAGE_FUTURE_SRC})
 add_library(stagefuture ${PROJECT_SOURCE_DIR}/include/stagefuture.h ${STAGE_FUTURE_INCLUDE} ${STAGE_FUTURE_SRC})

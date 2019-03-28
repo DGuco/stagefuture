@@ -2,6 +2,7 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
+      <config projectName="stagefuture" targetName="test" />
       <config projectName="stagefuture" targetName="stagefuture" />
       <config projectName="stagefuture" targetName="example" />
     </generated>
@@ -13,8 +14,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b5543997-1f6d-41c2-ae68-5c88338ec821" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/test/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/stagefuture/stage_future.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/stagefuture/stage_future.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/DependInfo.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/build.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/cmake_clean.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/link.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/stagefuture.dir/progress.make" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/compile_commands.json" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/compile_commands.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/stagefuture/scheduler.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/stagefuture/scheduler.h" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -41,19 +58,73 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler.h">
+        <entry file="file://$PROJECT_DIR$/examples/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="242">
-              <caret line="80" column="41" selection-start-line="80" selection-start-column="41" selection-end-line="80" selection-end-column="41" />
+            <state relative-caret-position="360">
+              <caret line="35" column="48" lean-forward="true" selection-start-line="35" selection-start-column="48" selection-end-line="35" selection-end-column="48" />
+              <folding>
+                <element signature="e#1156#1180#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/stagefuture/stage_future.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="499">
+              <caret line="618" column="29" selection-start-line="618" selection-start-column="29" selection-end-line="618" selection-end-column="29" />
+              <folding>
+                <element signature="e#1175#1250#0" expanded="true" />
+                <element signature="e#1497#1514#0" expanded="true" />
+                <element signature="e#1974#1986#0" expanded="true" />
+                <element signature="e#2073#2085#0" expanded="true" />
+                <element signature="e#21846#21861#0" expanded="true" />
+                <element signature="e#22329#22344#0" expanded="true" />
+                <element signature="e#23088#23103#0" expanded="true" />
+                <element signature="e#24702#24717#0" expanded="true" />
+                <element signature="e#25704#25719#0" expanded="true" />
+                <element signature="e#26144#26159#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/stagefuture/traits.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="301">
+              <caret line="53" column="7" selection-start-line="53" selection-start-column="7" selection-end-line="53" selection-end-column="7" />
+              <folding>
+                <element signature="e#1175#1250#0" expanded="true" />
+                <element signature="e#1426#1438#0" expanded="true" />
+                <element signature="e#1497#1499#0" expanded="true" />
+                <element signature="e#1572#1584#0" expanded="true" />
+                <element signature="e#1763#1775#0" expanded="true" />
+                <element signature="e#1828#1840#0" expanded="true" />
+                <element signature="e#1911#1923#0" expanded="true" />
+                <element signature="e#1998#2010#0" expanded="true" />
+                <element signature="e#2088#2100#0" expanded="true" />
+                <element signature="e#2325#2337#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="454">
+              <caret line="161" column="21" selection-start-line="161" selection-start-column="10" selection-end-line="161" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/include/stagefuture/task_base.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="395">
-              <caret line="242" column="4" selection-start-line="242" selection-start-column="4" selection-end-line="242" selection-end-column="4" />
+            <state relative-caret-position="589">
+              <caret line="513" column="55" selection-start-line="513" selection-start-column="52" selection-end-line="513" selection-end-column="55" />
               <folding>
                 <element signature="e#1175#1250#0" expanded="true" />
                 <element signature="e#3756#3772#0" expanded="true" />
@@ -67,97 +138,55 @@
                 <element signature="e#6869#6871#0" expanded="true" />
                 <element signature="e#7370#7382#0" expanded="true" />
                 <element signature="e#7492#7509#0" expanded="true" />
+                <element signature="e#8984#9016#0" expanded="true" />
+                <element signature="e#9064#9076#0" expanded="true" />
+                <element signature="e#9214#9229#0" expanded="true" />
+                <element signature="e#9326#9338#0" expanded="true" />
+                <element signature="e#10591#10623#0" expanded="true" />
+                <element signature="e#10702#10720#0" expanded="true" />
+                <element signature="e#12532#12565#0" expanded="true" />
+                <element signature="e#13677#13725#0" expanded="true" />
+                <element signature="e#14538#14583#0" expanded="true" />
+                <element signature="e#14645#14657#0" expanded="true" />
+                <element signature="e#15015#15047#0" expanded="true" />
+                <element signature="e#15129#15141#0" expanded="true" />
+                <element signature="e#18035#18084#0" expanded="true" />
+                <element signature="e#18188#18212#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/stagefuture/ref_count.h">
+        <entry file="file:///usr/include/c++/6/type_traits">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2682">
-              <caret line="149" selection-start-line="149" selection-end-line="149" />
+            <state relative-caret-position="291">
+              <caret line="693" column="11" selection-start-line="693" selection-start-column="11" selection-end-line="693" selection-end-column="11" />
               <folding>
-                <element signature="e#1365#1377#0" expanded="true" />
-                <element signature="e#4025#4076#0" expanded="true" />
-                <element signature="e#4989#5001#0" expanded="true" />
+                <element signature="e#2001#2024#0" expanded="true" />
+                <element signature="e#5207#5221#0" expanded="true" />
+                <element signature="e#17848#17862#0" expanded="true" />
+                <element signature="e#41009#41023#0" expanded="true" />
+                <element signature="e#42257#42292#0" expanded="true" />
+                <element signature="e#46014#46028#0" expanded="true" />
+                <element signature="e#57011#57113#0" expanded="true" />
+                <element signature="e#59473#59487#0" expanded="true" />
+                <element signature="e#60408#60422#0" expanded="true" />
+                <element signature="e#62839#62853#0" expanded="true" />
+                <element signature="e#63017#63031#0" expanded="true" />
+                <element signature="e#63291#63312#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/threadpool_scheduler.cpp">
+        <entry file="file:///usr/include/c++/6/bits/exception_ptr.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="179">
-              <caret line="20" selection-start-line="20" selection-end-line="20" />
+            <state relative-caret-position="2178">
+              <caret line="121" column="7" selection-start-line="121" selection-start-column="7" selection-end-line="121" selection-end-column="7" />
               <folding>
-                <element signature="e#1235#1255#0" expanded="true" />
-                <element signature="e#1344#1365#0" expanded="true" />
-                <element signature="e#7801#7965#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/stagefuture/traits.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="886">
-              <caret line="151" column="63" selection-start-line="151" selection-start-column="63" selection-end-line="151" selection-end-column="63" />
-              <folding>
-                <element signature="e#1175#1250#0" expanded="true" />
-                <element signature="e#1426#1438#0" expanded="true" />
-                <element signature="e#1497#1499#0" expanded="true" />
-                <element signature="e#1572#1584#0" expanded="true" />
-                <element signature="e#1763#1775#0" expanded="true" />
-                <element signature="e#1828#1840#0" expanded="true" />
-                <element signature="e#1911#1923#0" expanded="true" />
-                <element signature="e#1998#2010#0" expanded="true" />
-                <element signature="e#2088#2100#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/main.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="341">
-              <caret line="35" column="50" lean-forward="true" selection-start-line="35" selection-start-column="50" selection-end-line="35" selection-end-column="50" />
-              <folding>
-                <element signature="e#1156#1180#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/include/stagefuture/stage_future.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="284">
-              <caret line="659" column="75" selection-start-line="659" selection-start-column="75" selection-end-line="659" selection-end-column="75" />
-              <folding>
-                <element signature="e#1175#1250#0" expanded="true" />
-                <element signature="e#1497#1514#0" expanded="true" />
-                <element signature="e#1974#1986#0" expanded="true" />
-                <element signature="e#2073#2085#0" expanded="true" />
-                <element signature="e#21846#21861#0" expanded="true" />
-                <element signature="e#22122#22137#0" expanded="true" />
-                <element signature="e#22329#22344#0" expanded="true" />
-                <element signature="e#22503#22518#0" expanded="true" />
-                <element signature="e#22613#22625#0" expanded="true" />
-                <element signature="e#22701#22713#0" expanded="true" />
-                <element signature="e#23096#23111#0" expanded="true" />
-                <element signature="e#24702#24717#0" expanded="true" />
-                <element signature="e#25199#25214#0" expanded="true" />
-                <element signature="e#25704#25719#0" expanded="true" />
-                <element signature="e#26160#26175#0" expanded="true" />
-                <element signature="e#23462#23474#0" expanded="true" />
-                <element signature="e#23911#23923#0" expanded="true" />
-                <element signature="e#24638#24650#0" expanded="true" />
-                <element signature="e#25329#25344#0" expanded="true" />
-                <element signature="e#25622#25637#0" expanded="true" />
+                <element signature="e#4839#4853#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -166,7 +195,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/stagefuture.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="811">
+            <state relative-caret-position="2826">
               <caret line="157" selection-start-line="157" selection-end-line="157" />
               <folding>
                 <element signature="e#1667#1841#0" expanded="true" />
@@ -183,7 +212,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/singleton.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="504">
+            <state relative-caret-position="558">
               <caret line="31" column="7" selection-start-line="31" selection-start-column="7" selection-end-line="31" selection-end-column="7" />
               <folding>
                 <element signature="e#1338#1350#0" expanded="true" />
@@ -222,7 +251,6 @@
       <find>result</find>
       <find>continuation_exec_func</find>
       <find>task_res</find>
-      <find>remove_task</find>
       <find>add_ref_unlocked</find>
       <find>task_result_holder</find>
       <find>set_result</find>
@@ -240,6 +268,7 @@
       <find>inline_scheduler_impl</find>
       <find>schedule_task</find>
       <find>sched</find>
+      <find>remove_task</find>
     </findStrings>
     <replaceStrings>
       <replace>STAGE_FUTURE</replace>
@@ -276,19 +305,21 @@
         <option value="$PROJECT_DIR$/src/task_wait_event.h" />
         <option value="$PROJECT_DIR$/src/threadpool_scheduler.cpp" />
         <option value="$PROJECT_DIR$/src/work_steal_queue.h" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/include/stagefuture/task.h" />
         <option value="$PROJECT_DIR$/include/stagefuture/future.h" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/include/stagefuture/continuation_vector.h" />
         <option value="$PROJECT_DIR$/include/stagefuture/traits.h" />
         <option value="$PROJECT_DIR$/src/scheduler.cpp" />
-        <option value="$PROJECT_DIR$/include/stagefuture/scheduler.h" />
         <option value="$PROJECT_DIR$/include/stagefuture/scheduler_fwd.h" />
         <option value="$PROJECT_DIR$/include/stagefuture/task_base.h" />
         <option value="$PROJECT_DIR$/include/stagefuture/parallel_invoke.h" />
         <option value="$PROJECT_DIR$/examples/main.cpp" />
         <option value="$PROJECT_DIR$/include/stagefuture/stage_future.h" />
+        <option value="$PROJECT_DIR$/test/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/test/main.cpp" />
+        <option value="$PROJECT_DIR$/include/stagefuture/scheduler.h" />
       </list>
     </option>
   </component>
@@ -304,6 +335,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -324,13 +356,23 @@
             <path>
               <item name="stagefuture" type="b2602c69:ProjectViewProjectNode" />
               <item name="stagefuture" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+              <item name="stagefuture" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="stagefuture" type="b2602c69:ProjectViewProjectNode" />
+              <item name="stagefuture" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="stagefuture" type="b2602c69:ProjectViewProjectNode" />
+              <item name="stagefuture" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -340,6 +382,11 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -353,7 +400,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.example">
+  <component name="RunManager" selected="Application.test">
     <configuration name="example" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="stagefuture" TARGET_NAME="example" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="stagefuture" RUN_TARGET_NAME="example">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -364,9 +411,15 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="stagefuture" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="stagefuture" RUN_TARGET_NAME="test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Application.stagefuture" />
       <item itemvalue="Application.example" />
+      <item itemvalue="Application.test" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -395,6 +448,11 @@
       <workItem from="1551190346738" duration="18318000" />
       <workItem from="1551683073450" duration="112000" />
       <workItem from="1551683238454" duration="5330000" />
+      <workItem from="1553322547705" duration="3191000" />
+      <workItem from="1553479781758" duration="2613000" />
+      <workItem from="1553567323620" duration="597000" />
+      <workItem from="1553653896899" duration="5200000" />
+      <workItem from="1553738638668" duration="4096000" />
     </task>
     <task id="LOCAL-00001" summary="版权修改">
       <created>1548933507214</created>
@@ -480,11 +538,18 @@
       <option name="project" value="LOCAL" />
       <updated>1553256526067</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="task interface">
+      <created>1553256760503</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1553256760503</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="134702000" />
+    <option name="totallyTimeSpent" value="151502000" />
   </component>
   <component name="TodoView" selected-index="2">
     <todo-panel id="selected-file">
@@ -499,13 +564,13 @@
     <frame x="64" y="-4" width="1857" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2299613" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24378109" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3876698" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.5627615" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.25627616" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.19331244" />
@@ -604,13 +669,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="468">
-          <caret line="59" column="54" selection-start-line="59" selection-start-column="34" selection-end-line="59" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/stdlib.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9126">
@@ -641,16 +699,6 @@
           <caret line="2956" column="6" selection-start-line="2956" selection-start-column="6" selection-end-line="2956" selection-end-column="6" />
           <folding>
             <element signature="e#94855#94907#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/c++/6/bits/exception_ptr.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3060">
-          <caret line="170" column="25" selection-start-line="170" selection-start-column="25" selection-end-line="170" selection-end-column="25" />
-          <folding>
-            <element signature="e#4839#4853#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -686,21 +734,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="811">
-          <caret line="157" selection-start-line="157" selection-end-line="157" />
-          <folding>
-            <element signature="e#1667#1841#0" expanded="true" />
-            <element signature="e#3624#3658#0" expanded="true" />
-            <element signature="e#4299#4316#0" expanded="true" />
-            <element signature="e#4345#4362#0" expanded="true" />
-            <element signature="e#4398#4415#0" expanded="true" />
-            <element signature="e#4481#4512#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -724,18 +757,6 @@
           <caret line="33" column="19" selection-start-line="33" selection-start-column="6" selection-end-line="33" selection-end-column="19" />
           <folding>
             <element signature="e#1477#1538#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture/ref_count.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2682">
-          <caret line="149" selection-start-line="149" selection-end-line="149" />
-          <folding>
-            <element signature="e#1365#1377#0" expanded="true" />
-            <element signature="e#4025#4076#0" expanded="true" />
-            <element signature="e#4989#5001#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -789,90 +810,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/scheduler.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
-          <folding>
-            <element signature="e#1410#1523#0" expanded="true" />
-            <element signature="e#4591#4906#0" expanded="true" />
-            <element signature="e#5177#5235#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/c++/6/bits/move.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
           <caret line="134" column="4" selection-start-line="134" selection-start-column="4" selection-end-line="134" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/threadpool_scheduler.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="179">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
-          <folding>
-            <element signature="e#1235#1255#0" expanded="true" />
-            <element signature="e#1344#1365#0" expanded="true" />
-            <element signature="e#7801#7965#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="242">
-          <caret line="80" column="41" selection-start-line="80" selection-start-column="41" selection-end-line="80" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture/traits.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="886">
-          <caret line="151" column="63" selection-start-line="151" selection-start-column="63" selection-end-line="151" selection-end-column="63" />
-          <folding>
-            <element signature="e#1175#1250#0" expanded="true" />
-            <element signature="e#1426#1438#0" expanded="true" />
-            <element signature="e#1497#1499#0" expanded="true" />
-            <element signature="e#1572#1584#0" expanded="true" />
-            <element signature="e#1763#1775#0" expanded="true" />
-            <element signature="e#1828#1840#0" expanded="true" />
-            <element signature="e#1911#1923#0" expanded="true" />
-            <element signature="e#1998#2010#0" expanded="true" />
-            <element signature="e#2088#2100#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/c++/6/type_traits">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="2161" column="2" lean-forward="true" selection-start-line="2161" selection-start-column="2" selection-end-line="2161" selection-end-column="2" />
-          <folding>
-            <element signature="e#2001#2024#0" expanded="true" />
-            <element signature="e#5207#5221#0" expanded="true" />
-            <element signature="e#17848#17862#0" expanded="true" />
-            <element signature="e#42257#42292#0" expanded="true" />
-            <element signature="e#46014#46028#0" expanded="true" />
-            <element signature="e#59473#59487#0" expanded="true" />
-            <element signature="e#60408#60422#0" expanded="true" />
-            <element signature="e#62839#62853#0" expanded="true" />
-            <element signature="e#63017#63031#0" expanded="true" />
-            <element signature="e#63291#63312#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler_fwd.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="51" column="25" lean-forward="true" selection-start-line="51" selection-start-column="25" selection-end-line="51" selection-end-column="25" />
-          <folding>
-            <element signature="e#1727#1821#0" expanded="true" />
-            <element signature="e#1861#1873#0" expanded="true" />
-            <element signature="e#1913#1925#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -894,9 +835,97 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture/ref_count.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2682">
+          <caret line="149" selection-start-line="149" selection-end-line="149" />
+          <folding>
+            <element signature="e#1365#1377#0" expanded="true" />
+            <element signature="e#4025#4076#0" expanded="true" />
+            <element signature="e#4989#5001#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/threadpool_scheduler.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
+          <folding>
+            <element signature="e#1235#1255#0" expanded="true" />
+            <element signature="e#1344#1365#0" expanded="true" />
+            <element signature="e#7801#7965#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/LICENSE">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="25" column="20" selection-start-line="25" selection-start-column="20" selection-end-line="25" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="11" column="31" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="31" />
+          <folding>
+            <element signature="e#39#58#0" expanded="true" />
+            <element signature="e#90#123#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="432">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler_fwd.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="45" column="7" selection-start-line="45" selection-start-column="7" selection-end-line="45" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/6/bits/exception_ptr.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2178">
+          <caret line="121" column="7" selection-start-line="121" selection-start-column="7" selection-end-line="121" selection-end-column="7" />
+          <folding>
+            <element signature="e#4839#4853#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2826">
+          <caret line="157" selection-start-line="157" selection-end-line="157" />
+          <folding>
+            <element signature="e#1667#1841#0" expanded="true" />
+            <element signature="e#3624#3658#0" expanded="true" />
+            <element signature="e#4299#4316#0" expanded="true" />
+            <element signature="e#4345#4362#0" expanded="true" />
+            <element signature="e#4398#4415#0" expanded="true" />
+            <element signature="e#4481#4512#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/singleton.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
+        <state relative-caret-position="558">
           <caret line="31" column="7" selection-start-line="31" selection-start-column="7" selection-end-line="31" selection-end-column="7" />
           <folding>
             <element signature="e#1338#1350#0" expanded="true" />
@@ -904,10 +933,98 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/scheduler.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
+          <folding>
+            <element signature="e#1410#1523#0" expanded="true" />
+            <element signature="e#4591#4906#0" expanded="true" />
+            <element signature="e#5177#5235#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/6/type_traits">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="693" column="11" selection-start-line="693" selection-start-column="11" selection-end-line="693" selection-end-column="11" />
+          <folding>
+            <element signature="e#2001#2024#0" expanded="true" />
+            <element signature="e#5207#5221#0" expanded="true" />
+            <element signature="e#17848#17862#0" expanded="true" />
+            <element signature="e#41009#41023#0" expanded="true" />
+            <element signature="e#42257#42292#0" expanded="true" />
+            <element signature="e#46014#46028#0" expanded="true" />
+            <element signature="e#57011#57113#0" expanded="true" />
+            <element signature="e#59473#59487#0" expanded="true" />
+            <element signature="e#60408#60422#0" expanded="true" />
+            <element signature="e#62839#62853#0" expanded="true" />
+            <element signature="e#63017#63031#0" expanded="true" />
+            <element signature="e#63291#63312#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture/scheduler.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="161" column="21" selection-start-line="161" selection-start-column="10" selection-end-line="161" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="35" column="48" lean-forward="true" selection-start-line="35" selection-start-column="48" selection-end-line="35" selection-end-column="48" />
+          <folding>
+            <element signature="e#1156#1180#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture/traits.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="301">
+          <caret line="53" column="7" selection-start-line="53" selection-start-column="7" selection-end-line="53" selection-end-column="7" />
+          <folding>
+            <element signature="e#1175#1250#0" expanded="true" />
+            <element signature="e#1426#1438#0" expanded="true" />
+            <element signature="e#1497#1499#0" expanded="true" />
+            <element signature="e#1572#1584#0" expanded="true" />
+            <element signature="e#1763#1775#0" expanded="true" />
+            <element signature="e#1828#1840#0" expanded="true" />
+            <element signature="e#1911#1923#0" expanded="true" />
+            <element signature="e#1998#2010#0" expanded="true" />
+            <element signature="e#2088#2100#0" expanded="true" />
+            <element signature="e#2325#2337#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/stagefuture/stage_future.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="499">
+          <caret line="618" column="29" selection-start-line="618" selection-start-column="29" selection-end-line="618" selection-end-column="29" />
+          <folding>
+            <element signature="e#1175#1250#0" expanded="true" />
+            <element signature="e#1497#1514#0" expanded="true" />
+            <element signature="e#1974#1986#0" expanded="true" />
+            <element signature="e#2073#2085#0" expanded="true" />
+            <element signature="e#21846#21861#0" expanded="true" />
+            <element signature="e#22329#22344#0" expanded="true" />
+            <element signature="e#23088#23103#0" expanded="true" />
+            <element signature="e#24702#24717#0" expanded="true" />
+            <element signature="e#25704#25719#0" expanded="true" />
+            <element signature="e#26144#26159#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/include/stagefuture/task_base.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="395">
-          <caret line="242" column="4" selection-start-line="242" selection-start-column="4" selection-end-line="242" selection-end-column="4" />
+        <state relative-caret-position="589">
+          <caret line="513" column="55" selection-start-line="513" selection-start-column="52" selection-end-line="513" selection-end-column="55" />
           <folding>
             <element signature="e#1175#1250#0" expanded="true" />
             <element signature="e#3756#3772#0" expanded="true" />
@@ -921,45 +1038,20 @@
             <element signature="e#6869#6871#0" expanded="true" />
             <element signature="e#7370#7382#0" expanded="true" />
             <element signature="e#7492#7509#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="35" column="50" lean-forward="true" selection-start-line="35" selection-start-column="50" selection-end-line="35" selection-end-column="50" />
-          <folding>
-            <element signature="e#1156#1180#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/stagefuture/stage_future.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="284">
-          <caret line="659" column="75" selection-start-line="659" selection-start-column="75" selection-end-line="659" selection-end-column="75" />
-          <folding>
-            <element signature="e#1175#1250#0" expanded="true" />
-            <element signature="e#1497#1514#0" expanded="true" />
-            <element signature="e#1974#1986#0" expanded="true" />
-            <element signature="e#2073#2085#0" expanded="true" />
-            <element signature="e#21846#21861#0" expanded="true" />
-            <element signature="e#22122#22137#0" expanded="true" />
-            <element signature="e#22329#22344#0" expanded="true" />
-            <element signature="e#22503#22518#0" expanded="true" />
-            <element signature="e#22613#22625#0" expanded="true" />
-            <element signature="e#22701#22713#0" expanded="true" />
-            <element signature="e#23096#23111#0" expanded="true" />
-            <element signature="e#24702#24717#0" expanded="true" />
-            <element signature="e#25199#25214#0" expanded="true" />
-            <element signature="e#25704#25719#0" expanded="true" />
-            <element signature="e#26160#26175#0" expanded="true" />
-            <element signature="e#23462#23474#0" expanded="true" />
-            <element signature="e#23911#23923#0" expanded="true" />
-            <element signature="e#24638#24650#0" expanded="true" />
-            <element signature="e#25329#25344#0" expanded="true" />
-            <element signature="e#25622#25637#0" expanded="true" />
+            <element signature="e#8984#9016#0" expanded="true" />
+            <element signature="e#9064#9076#0" expanded="true" />
+            <element signature="e#9214#9229#0" expanded="true" />
+            <element signature="e#9326#9338#0" expanded="true" />
+            <element signature="e#10591#10623#0" expanded="true" />
+            <element signature="e#10702#10720#0" expanded="true" />
+            <element signature="e#12532#12565#0" expanded="true" />
+            <element signature="e#13677#13725#0" expanded="true" />
+            <element signature="e#14538#14583#0" expanded="true" />
+            <element signature="e#14645#14657#0" expanded="true" />
+            <element signature="e#15015#15047#0" expanded="true" />
+            <element signature="e#15129#15141#0" expanded="true" />
+            <element signature="e#18035#18084#0" expanded="true" />
+            <element signature="e#18188#18212#0" expanded="true" />
           </folding>
         </state>
       </provider>
