@@ -467,12 +467,13 @@ void unwrapped_finish(task_base *parent_base, Child child_task)
 {
     // Destroy the parent task's function since it has been executed
     parent_base->state.store(task_state::unwrapped, std::memory_order_relaxed);
-    static_cast<task_func<Func, Result> *>(parent_base)->destroy_func();
+    task_func<Func, Result> *pParentFunc = static_cast<task_func<Func, Result> *>(parent_base);
+    pParentFunc->destroy_func();
 
     // Set up a continuation on the child to set the result of the parent
     LIBASYNC_TRY {
         parent_base->add_ref();
-        child_task.then(inline_scheduler(), unwrapped_func<Result, Child>(task_ptr(parent_base)));
+        child_task.then(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
     } LIBASYNC_CATCH(...) {
         // Use cancel_base here because the function object is already destroyed.
         static_cast<task_result<Result> *>(parent_base)->cancel_base(std::current_exception());
