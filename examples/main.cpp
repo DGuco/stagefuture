@@ -42,6 +42,39 @@ int main(int argc, char *argv[])
                                                               << " thread id " << std::this_thread::get_id()
                                                               << std::endl;
                                                       });
+    stage_future<int> task11 = stagefuture::supply_async(singleThreadScheduler,
+                                                         []() -> int
+                                                         {
+                                                             std::cout
+                                                                 << "================"
+                                                                 << " thread id " << std::this_thread::get_id()
+                                                                 << std::endl;
+                                                             return 100;
+                                                         });
+    stage_future<std::string> ttt =
+        task11.then([](int value) -> stage_future<std::string>
+                    {
+                        value *= 100;
+                        return stagefuture::supply_async([value]() -> std::string
+                                                         {
+                                                             std::cout
+                                                                 << "Task 1 executes asynchronously,test_a * test_a: "
+                                                                 << std::endl;
+                                                             return std::to_string(value);
+                                                         });
+                    });
+
+    std::cout
+        << "****************************************************" << std::endl;
+    ttt.thenAccept([](std::string value) -> void
+                   {
+                       std::cout
+                           << "Task ttt executes in parallel with stage_future 1"
+                           << " thread id " << std::this_thread::get_id()
+                           << "======="
+                           << value
+                           << std::endl;
+                   });
 
     stage_future<int> task2 = stagefuture::supply_async(singleThreadScheduler,
                                                         []() -> int

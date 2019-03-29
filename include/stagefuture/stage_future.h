@@ -287,6 +287,7 @@ public:
     {
         return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
     }
+
     template<typename Func>
     typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
     {
@@ -602,6 +603,7 @@ inline stage_future<void> make_task();
 template<typename T>
 stage_future<T> make_exception_task(std::exception_ptr except);
 /////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
+
 
 template<typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>

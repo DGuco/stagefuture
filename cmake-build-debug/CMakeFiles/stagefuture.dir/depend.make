@@ -47,3 +47,5 @@ CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../src/task_wait_even
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../src/threadpool_scheduler.cpp
 CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o: ../src/work_steal_queue.h
 
+CMakeFiles/stagefuture.dir/test/main.cpp.o: ../test/main.cpp
+

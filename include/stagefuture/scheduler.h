@@ -84,7 +84,7 @@ public:
         auto
         cont = new detail::task_func<wait_exec_func < typename std::decay<Func>::type>,
             detail::fake_void > (std::forward<Func>(func));
-        cont->sched = (detail::scheduler *) std::addressof(inline_scheduler());
+        cont->sched = std::addressof(inline_scheduler());
         handle->add_continuation(inline_scheduler(), detail::task_ptr(cont));
     }
 };
@@ -132,7 +132,7 @@ public:
     ~task_run_handle()
     {
         if (handle)
-            handle->cancel(std::make_exception_ptr(task_not_executed()));
+            handle->cancel(handle.get(), std::make_exception_ptr(task_not_executed()));
     }
 
     // Check if the handle is valid
@@ -144,8 +144,10 @@ public:
     // Run the task and release the handle
     void run()
     {
-        handle->run();
-        handle = nullptr;
+        if (handle) {
+            handle->run(handle.get());
+            handle = nullptr;
+        }
     }
 
     // Run the task but run the given wait handler when waiting for a task,

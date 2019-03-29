@@ -47,3 +47,5 @@ CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o
  /home/dguco/workspace/cpp/stagefuture/src/task_wait_event.h
  /home/dguco/workspace/cpp/stagefuture/src/threadpool_scheduler.cpp
  /home/dguco/workspace/cpp/stagefuture/src/work_steal_queue.h
+CMakeFiles/stagefuture.dir/test/main.cpp.o
+ /home/dguco/workspace/cpp/stagefuture/test/main.cpp

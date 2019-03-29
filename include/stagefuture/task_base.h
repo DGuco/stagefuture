@@ -47,13 +47,13 @@ class task_interface
 {
 public:
     // Run the associated function
-    virtual void run() LIBASYNC_NOEXCEPT = 0;
+    virtual void run(task_base *t) LIBASYNC_NOEXCEPT = 0;
 
     // Cancel the task with an exception
-    virtual void cancel(std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
+    virtual void cancel(task_base *t, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
 
     // Schedule the task using its scheduler
-    virtual void schedule(task_base *parent) = 0;
+    virtual void schedule(task_base *parent, task_ptr t) = 0;
 };
 
 // Type-generic base task object
@@ -97,7 +97,7 @@ void run_continuation(detail::scheduler &sched, task_ptr &&cont)
         detail::schedule_task(sched, std::move(cont));
     } LIBASYNC_CATCH(...) {
         // This is suboptimal, but better than letting the exception leak
-        cont->cancel(std::current_exception());
+        cont->cancel(cont.get(), std::current_exception());
     }
 }
 
@@ -108,7 +108,7 @@ void run_continuations()
 {
     continuations.flush_and_lock([this](task_ptr t)
                                  {
-                                     t->schedule(this);
+                                     t->schedule(this, std::move(t));
                                  });
 }
 
@@ -289,17 +289,17 @@ struct task_result: public task_result_holder<Result>
             LIBASYNC_RETHROW_EXCEPTION(get_exception());
     }
 
-    void run() LIBASYNC_NOEXCEPT override
+    void run(task_base *t) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void cancel(std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void cancel(task_base *t, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void schedule(task_base *parent) override
+    void schedule(task_base *parent, task_ptr t) override
     {
 
     }
@@ -396,34 +396,27 @@ struct task_func: public task_result<Result>, func_holder<Func>
             this->destroy_func();
     }
 
-    void run() LIBASYNC_NOEXCEPT override
+    void run(task_base *t) LIBASYNC_NOEXCEPT override
     {
         LIBASYNC_TRY {
             // Dispatch to execution function
-            this->get_func()(this);
+            static_cast<task_func<Func, Result> *>(t)->get_func()(t);
         } LIBASYNC_CATCH(...) {
-            cancel(std::current_exception());
+            cancel(t, std::current_exception());
         }
     }
 
-    void cancel(std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void cancel(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT override
     {
         // Destroy the function object when canceling since it won't be
         // used anymore.
-        this->destroy_func();
-        this->cancel_base(std::move(ptr));
+        static_cast<task_func<Func, Result> *>(t)->destroy_func();
+        static_cast<task_func<Func, Result> *>(t)->cancel_base(std::move(except));
     }
 
-    void schedule(task_base *parent) override
+    void schedule(task_base *parent, task_ptr t) override
     {
-        parent->run_continuation((*this->sched), std::move((task_ptr)
-        this));
-    }
-
-    // Cancel the task
-    static void cancel_task(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT
-    {
-        t->cancel(std::move(except));
+        parent->run_continuation((*(this->sched)), std::move(t));
     }
 };
 
@@ -544,9 +537,7 @@ struct continuation_exec_func<Parent, Result, Func, true, false>: private func_b
     void operator()(task_base *t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
-            task_func<continuation_exec_func, Result>::cancel_task(t,
-                                                                   std::exception_ptr(get_internal_task(parent)
-                                                                                          ->get_exception()));
+            t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else {
             static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func()),
                                                                                        get_internal_task(parent)
@@ -582,9 +573,7 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
     void operator()(task_base *t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
-            task_func<continuation_exec_func, Result>::cancel(t,
-                                                              std::exception_ptr(get_internal_task(parent)
-                                                                                     ->get_exception()));
+            t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else
             unwrapped_finish<Result, continuation_exec_func>(t,
                                                              detail::invoke_fake_void(std::move(this->get_func()),
