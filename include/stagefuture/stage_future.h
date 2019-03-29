@@ -75,12 +75,13 @@ class basic_future
 
         // Create continuation
         typedef continuation_traits<Parent, Func> traits;
+        bool iii = traits::is_value_cont::value;
         typedef typename void_to_fake_void<typename traits::future_type::result_type>::type cont_internal_result;
         typedef continuation_exec_func<typename std::decay<Parent>::type,
                                        cont_internal_result,
                                        typename traits::decay_func,
                                        traits::is_value_cont::value,
-                                       is_task<typename traits::result_type>::value> exec_func;
+                                       is_stage_future<typename traits::result_type>::value> exec_func;
         typename traits::future_type cont;
         set_internal_task(cont,
                           task_ptr(new task_func<exec_func, cont_internal_result>(std::forward<Func>(f),
@@ -499,7 +500,7 @@ class local_future
     // Task execution function type
     typedef detail::root_exec_func<internal_result,
                                    decay_func,
-                                   detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
+                                   detail::is_stage_future<decltype(std::declval<decay_func>()())>::value> exec_func;
 
     // Task object embedded directly. The ref-count is initialized to 1 so it
     // will never be freed using delete, only when the local_future is destroyed.
@@ -620,7 +621,7 @@ shedule_task(detail::scheduler &sched, Func &&f)
         internal_result;
     typedef detail::root_exec_func<internal_result,
                                    decay_func,
-                                   detail::is_task<decltype(std::declval<decay_func>()())>::value> exec_func;
+                                   detail::is_stage_future<decltype(std::declval<decay_func>()())>::value> exec_func;
     stage_future<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
     detail::set_internal_task(out,
                               detail::task_ptr(new detail::task_func<exec_func,

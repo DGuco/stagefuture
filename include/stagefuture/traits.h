@@ -51,25 +51,26 @@ inline void fake_void_to_void(fake_void)
 
 // Check if type is a task type, used to detect task unwraping
 template<typename T>
-struct is_task: public std::false_type
+struct is_stage_future: public std::false_type
 {
 };
+
 template<typename T>
-struct is_task<stage_future < T>>:
+struct is_stage_future<stage_future < T>>:
 public std::true_type
 {
 };
 template<typename T>
-struct is_task<const stage_future<T>>: public std::true_type
+struct is_stage_future<const stage_future<T>>: public std::true_type
 {
 };
 template<typename T>
-struct is_task<shared_stage_future < T>>:
+struct is_stage_future<shared_stage_future < T>>:
 public std::true_type
 {
 };
 template<typename T>
-struct is_task<const shared_stage_future<T>>: public std::true_type
+struct is_stage_future<const shared_stage_future<T>>: public std::true_type
 {
 };
 
@@ -141,7 +142,7 @@ typename void_to_fake_void<decltype(std::declval<Func>()())>::type invoke_fake_v
     return detail::invoke_fake_void(std::forward<Func>(f));
 }
 
-// Various properties of a continuation function
+//Various properties of a continuation function
 template<typename Func, typename Parent, typename = decltype(std::declval<Func>()(std::declval<Parent>().get()))>
 std::true_type is_value_cont_helper(const Parent &, int, int);
 template<typename Func, typename = decltype(std::declval<Func>()())>

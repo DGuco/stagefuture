@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
                                                              return 100;
                                                          });
     stage_future<std::string> ttt =
-        task11.then([](int value) -> stage_future<std::string>
+        task11.thenApply([](int value) -> stage_future<std::string>
                     {
                         value *= 100;
                         return stagefuture::supply_async([value]() -> std::string
