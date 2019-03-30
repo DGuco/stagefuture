@@ -34,6 +34,7 @@ struct default_deleter
     static void do_delete(T *p)
     {
         delete p;
+        p = nullptr;
     }
 };
 

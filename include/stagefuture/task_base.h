@@ -113,8 +113,7 @@ void run_continuations()
 }
 
 // Add a continuation to this task
-template<typename Sched>
-void add_continuation(Sched &sched, task_ptr cont)
+void add_continuation(detail::scheduler &sched, task_ptr cont)
 {
     // Check for task completion
     task_state current_state = state.load(std::memory_order_relaxed);

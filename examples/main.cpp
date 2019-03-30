@@ -45,24 +45,27 @@ int main(int argc, char *argv[])
     stage_future<int> task11 = stagefuture::supply_async(singleThreadScheduler,
                                                          []() -> int
                                                          {
-                                                             std::cout
-                                                                 << "================"
-                                                                 << " thread id " << std::this_thread::get_id()
-                                                                 << std::endl;
-                                                             return 100;
+                                                             int value = 100;
+                                                             std::cout << "================"
+                                                                       << "value: "
+                                                                       << value << std::endl;
+                                                             return value;
                                                          });
     stage_future<std::string> ttt =
         task11.thenApply([](int value) -> stage_future<std::string>
-                    {
-                        value *= 100;
-                        return stagefuture::supply_async([value]() -> std::string
-                                                         {
-                                                             std::cout
-                                                                 << "Task 1 executes asynchronously,test_a * test_a: "
-                                                                 << std::endl;
-                                                             return std::to_string(value);
-                                                         });
-                    });
+                         {
+                             value *= 100;
+                             auto res = stagefuture::supply_async([value]() -> std::string
+                                                                  {
+                                                                      std::cout
+                                                                          << "================"
+                                                                          << "value: "
+                                                                          << value
+                                                                          << std::endl;
+                                                                      return std::to_string(value);
+                                                                  });
+                             value *= 100;
+                         });
 
     std::cout
         << "****************************************************" << std::endl;
