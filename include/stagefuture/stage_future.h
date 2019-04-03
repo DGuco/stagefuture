@@ -75,7 +75,6 @@ class basic_future
 
         // Create continuation
         typedef continuation_traits<Parent, Func> traits;
-        bool iii = traits::is_value_cont::value;
         typedef typename void_to_fake_void<typename traits::future_type::result_type>::type cont_internal_result;
         typedef continuation_exec_func<typename std::decay<Parent>::type,
                                        cont_internal_result,
