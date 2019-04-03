@@ -504,7 +504,8 @@ struct root_exec_func<Result, Func, true>: private func_base<Func>
     {}
     void operator()(task_base *t)
     {
-        unwrapped_finish<Result, root_exec_func>(t, std::move(this->get_func())());
+        stage_future<Result> resFuture = std::move(this->get_func())();
+        unwrapped_finish<Result, root_exec_func>(t, std::move(resFuture));
     }
 };
 

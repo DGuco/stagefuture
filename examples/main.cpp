@@ -42,28 +42,44 @@ int main(int argc, char *argv[])
                                                               << " thread id " << std::this_thread::get_id()
                                                               << std::endl;
                                                       });
-    stage_future<int> task11 = stagefuture::supply_async(singleThreadScheduler,
-                                                         []() -> int
-                                                         {
-                                                             int value = 100;
-                                                             std::cout << "================"
-                                                                       << "value: "
-                                                                       << value << std::endl;
-                                                             return value;
-                                                         });
+
+    std::string str = "100";
+    stage_future<int> task11 =
+        stagefuture::supply_async(singleThreadScheduler,
+                                  [&scheduler, &str]() -> stage_future<int>
+                                  {
+                                      std::cout
+                                          << "=======create task11========="
+                                          << str
+                                          << std::endl;
+                                      str = std::to_string(atoi(str.c_str()) * 100);
+                                      stage_future<int> res = stagefuture::supply_async(scheduler, [&str]() -> int
+                                      {
+                                          std::cout
+                                              << "======== in create task11 ========"
+                                              << str
+                                              << std::endl;
+                                          return atoi(str.c_str());
+                                      });
+                                      std::cout
+                                          << "=======create task11 end ========="
+                                          << std::endl;
+                                      return res;
+                                  });
+
     stage_future<std::string> ttt =
-        task11.thenApply([](int value) -> stage_future<std::string>
+        task11.thenApply([&scheduler](int value) -> stage_future<std::string>
                          {
                              value *= 100;
-                             auto res = stagefuture::supply_async([value]() -> std::string
-                                                                  {
-                                                                      std::cout
-                                                                          << "================"
-                                                                          << "value: "
-                                                                          << value
-                                                                          << std::endl;
-                                                                      return std::to_string(value);
-                                                                  });
+                             auto res = stagefuture::supply_async(scheduler, [value]() -> std::string
+                             {
+                                 std::cout
+                                     << "================"
+                                     << "value: "
+                                     << value
+                                     << std::endl;
+                                 return std::to_string(value);
+                             });
                              value *= 100;
                          });
 
