@@ -138,7 +138,8 @@ struct ref_count_base
     // By default the reference count is initialized to 1
     explicit ref_count_base(std::size_t count = 1)
         : ref_count(count)
-    {}
+    {
+    }
 
     void add_ref(std::size_t count = 1)
     {
