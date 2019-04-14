@@ -37,9 +37,8 @@ int main(int argc, char *argv[])
                                                       [test_a]() -> void
                                                       {
                                                           std::cout
-                                                              << "Task 1 executes asynchronously,test_a * test_a: "
-                                                              << test_a * test_a
-                                                              << " thread id " << std::this_thread::get_id()
+                                                              << "Create Task 1 executes asynchronously,test_a : "
+                                                              << test_a
                                                               << std::endl;
                                                       });
 
@@ -74,7 +73,7 @@ int main(int argc, char *argv[])
                              auto res = stagefuture::supply_async(scheduler, [value]() -> std::string
                              {
                                  std::cout
-                                     << "================"
+                                     << "=======create ttt========="
                                      << "value: "
                                      << value
                                      << std::endl;
@@ -89,8 +88,6 @@ int main(int argc, char *argv[])
                    {
                        std::cout
                            << "Task ttt executes in parallel with stage_future 1"
-                           << " thread id " << std::this_thread::get_id()
-                           << "======="
                            << value
                            << std::endl;
                    });
