@@ -7,16 +7,6 @@
 #include <utility>      // std::declval
 #include <iostream>     // std::cout
 
-template<typename Res, typename ... Args>
-struct Func
-{
-    std::function<Res(Args...)> func;
-    Func(std::function<Res(Args...)> &&func)
-    {
-        func = std::move(func);
-    }
-};
-
 struct A
 {              // abstract class
     virtual int value() = 0;
