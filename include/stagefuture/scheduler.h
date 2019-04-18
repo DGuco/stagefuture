@@ -33,11 +33,11 @@ LIBASYNC_EXPORT std::size_t hardware_concurrency() LIBASYNC_NOEXCEPT;
 // Task handle used by a wait handler
 class task_wait_handle
 {
-    detail::task_base *handle;
+    detail::task_ptr handle;
 
     // Allow construction in wait_for_task()
-    friend LIBASYNC_EXPORT void detail::wait_for_task(detail::task_base *t);
-    task_wait_handle(detail::task_base *t)
+    friend LIBASYNC_EXPORT void detail::wait_for_task(detail::task_ptr t);
+    task_wait_handle(detail::task_ptr t)
         : handle(t)
     {}
 
@@ -49,7 +49,7 @@ class task_wait_handle
         explicit wait_exec_func(F &&f)
             : detail::func_base<Func>(std::forward<F>(f))
         {}
-        void operator()(detail::task_base *)
+        void operator()(detail::task_ptr )
         {
             // Just call the function directly, all this wrapper does is remove
             // the task_base* parameter.
@@ -132,7 +132,7 @@ public:
     ~task_run_handle()
     {
         if (handle)
-            handle->cancel(handle.get(), std::make_exception_ptr(task_not_executed()));
+            handle->cancel(handle, std::make_exception_ptr(task_not_executed()));
     }
 
     // Check if the handle is valid
@@ -145,7 +145,7 @@ public:
     void run()
     {
         if (handle) {
-            handle->run(handle.get());
+            handle->run(handle);
             handle = nullptr;
         }
     }

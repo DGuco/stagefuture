@@ -129,7 +129,7 @@ static wait_handler get_thread_wait_handler()
 }
 
 // Wait for a task to complete
-void wait_for_task(task_base *wait_task)
+void wait_for_task(task_ptr wait_task)
 {
     // Dispatch to the current thread's wait handler
     wait_handler thread_wait_handler = get_thread_wait_handler();

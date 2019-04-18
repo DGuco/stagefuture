@@ -55,7 +55,7 @@ void schedule_task(detail::scheduler &sched, task_ptr t);
 
 // Wait for the given task to finish. This will call the wait handler currently
 // active for this thread, which causes the thread to sleep by default.
-LIBASYNC_EXPORT void wait_for_task(task_base *wait_task);
+LIBASYNC_EXPORT void wait_for_task(task_ptr wait_task);
 
 // Forward-declaration for data used by threadpool_scheduler
 struct threadpool_data;

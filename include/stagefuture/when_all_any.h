@@ -164,8 +164,7 @@ void when_any_variadic(when_any_state<Result> *state, First &&first, T &&... tas
 
     // Add a copy of the task to the results because the event may be
     // set before all tasks have finished.
-    detail::task_base *t = detail::get_internal_task(first);
-    t->add_ref();
+    detail::task_ptr t = detail::get_internal_task(first);
     detail::set_internal_task(std::get<index>(state->result), detail::task_ptr(t));
 
     // Add a continuation to the task
@@ -243,8 +242,7 @@ when_any(Iter begin, Iter end)
     for (std::size_t i = 0; begin != end; i++, ++begin) {
         // Add a copy of the task to the results because the event may be
         // set before all tasks have finished.
-        detail::task_base *t = detail::get_internal_task(*begin);
-        t->add_ref();
+        detail::task_ptr *t = detail::get_internal_task(*begin);
         detail::set_internal_task(state->result[i], detail::task_ptr(t));
 
         LIBASYNC_TRY {

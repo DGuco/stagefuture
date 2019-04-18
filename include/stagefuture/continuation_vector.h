@@ -98,7 +98,6 @@ class continuation_vector
     // Heap-allocated data for the slow path
     struct vector_data
     {
-        typedef typename std::vector<task_ptr *>::iterator task_iterator;
         std::vector<task_ptr *> vector;
         std::mutex lock;
     };
@@ -230,23 +229,19 @@ public:
             // If we are using vector_data, lock it and flush all elements
             vector_data *pData = data.get_ptr<vector_data>();
             std::lock_guard<std::mutex> locked(pData->lock);
-            std::for_each(pData->vector, [&func](vector_data::task_iterator task_iterator)
-                -> void
-            {
-                func(task_ptr(*(*task_iterator)));
-            });
 
+            for (auto it : pData->vector) {
+                func(*it);
+            }
             // Clear the vector to save memory. Note that we don't actually free
             // the vector_data here because other threads may still be using it.
             // This isn't a very significant cost since multiple continuations
             // are relatively rare.
-            std::for_each(pData->vector, [](vector_data::task_iterator task_iterator)
-                -> void
-            {
-                task_ptr *taskPtr = *task_iterator;
-                delete taskPtr;
-                taskPtr = nullptr;
-            });
+            for (auto it : pData->vector) {
+                delete it;
+                it = nullptr;
+            }
+
             pData->vector.clear();
         }
         else {

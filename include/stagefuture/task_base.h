@@ -58,94 +58,94 @@ public:
 
 // Type-generic base task object
 struct LIBASYNC_CACHELINE_ALIGN task_base: public task_interface,
-                                           ref_count_base<task_base, default_deleter < task_base>>
+                                           std::enable_shared_from_this<task_base>
 {
 // Task state
-std::atomic<task_state> state;
+    std::atomic<task_state> state;
 
 // Whether get_task() was already called on an event_event
-bool event_task_got_task;
+    bool event_task_got_task;
 
 // Vector of continuations
-continuation_vector continuations;
+    continuation_vector continuations;
 
 // Use aligned memory allocation
-void *operator new(std::size_t size)
-{
-    return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
-}
-void operator delete(void *ptr)
-{
-    aligned_free(ptr);
-}
+    void *operator new(std::size_t size)
+    {
+        return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
+    }
+    void operator delete(void *ptr)
+    {
+        aligned_free(ptr);
+    }
 
 // Initialize task state
-task_base()
-    : state(task_state::pending)
-{}
+    task_base()
+        : state(task_state::pending)
+    {}
 
 // Check whether the task is ready and include an acquire barrier if it is
-bool ready() const
-{
-    return is_finished(state.load(std::memory_order_acquire));
-}
+    bool ready() const
+    {
+        return is_finished(state.load(std::memory_order_acquire));
+    }
 
 // Run a single continuation
-void run_continuation(detail::scheduler &sched, task_ptr &&cont)
-{
-    LIBASYNC_TRY {
-        detail::schedule_task(sched, std::move(cont));
-    } LIBASYNC_CATCH(...) {
-        // This is suboptimal, but better than letting the exception leak
-        cont->cancel(cont.get(), std::current_exception());
+    void run_continuation(detail::scheduler &sched, task_ptr &&cont)
+    {
+        LIBASYNC_TRY {
+            detail::schedule_task(sched, std::move(cont));
+        } LIBASYNC_CATCH(...) {
+            // This is suboptimal, but better than letting the exception leak
+            cont->cancel(cont, std::current_exception());
+        }
     }
-}
 
 // Run all of the task's continuations after it has completed or canceled.
 // The list of continuations is emptied and locked to prevent any further
 // continuations from being added.
-void run_continuations()
-{
-    continuations.flush_and_lock([this](task_ptr t)
-                                 {
-                                     t->schedule(this, std::move(t));
-                                 });
-}
+    void run_continuations()
+    {
+        continuations.flush_and_lock([this](task_ptr t)
+                                     {
+                                         t->schedule(shared_from_this(), std::move(t));
+                                     });
+    }
 
 // Add a continuation to this task
-void add_continuation(detail::scheduler &sched, task_ptr cont)
-{
-    // Check for task completion
-    task_state current_state = state.load(std::memory_order_relaxed);
-    if (!is_finished(current_state)) {
-        // Try to add the task to the continuation list. This can fail only
-        // if the task has just finished, in which case we run it directly.
-        if (continuations.try_add(std::move(cont)))
-            return;
-    }
+    void add_continuation(detail::scheduler &sched, task_ptr cont)
+    {
+        // Check for task completion
+        task_state current_state = state.load(std::memory_order_relaxed);
+        if (!is_finished(current_state)) {
+            // Try to add the task to the continuation list. This can fail only
+            // if the task has just finished, in which case we run it directly.
+            if (continuations.try_add(std::move(cont)))
+                return;
+        }
 
-    // Otherwise run the continuation directly
-    std::atomic_thread_fence(std::memory_order_acquire);
-    run_continuation(sched, std::move(cont));
-}
+        // Otherwise run the continuation directly
+        std::atomic_thread_fence(std::memory_order_acquire);
+        run_continuation(sched, std::move(cont));
+    }
 
 // Finish the task after it has been executed and the result set
-void finish()
-{
-    state.store(task_state::completed, std::memory_order_release);
-    run_continuations();
-}
+    void finish()
+    {
+        state.store(task_state::completed, std::memory_order_release);
+        run_continuations();
+    }
 
 // Wait for the task to finish executing
-task_state wait()
-{
-    task_state s = state.load(std::memory_order_acquire);
-    if (!is_finished(s)) {
-        wait_for_task(this);
-        s = state.load(std::memory_order_relaxed);
+    task_state wait()
+    {
+        task_state s = state.load(std::memory_order_acquire);
+        if (!is_finished(s)) {
+            wait_for_task(shared_from_this());
+            s = state.load(std::memory_order_relaxed);
+        }
+        return s;
     }
-    return s;
-}
 };
 
 // Result type-specific task object
@@ -288,17 +288,17 @@ struct task_result: public task_result_holder<Result>
             LIBASYNC_RETHROW_EXCEPTION(get_exception());
     }
 
-    void run(task_base *t) LIBASYNC_NOEXCEPT override
+    void run(task_ptr t) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void cancel(task_base *t, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void cancel(task_ptr t, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void schedule(task_ptr parent, task_ptr t) override
     {
 
     }
@@ -395,25 +395,25 @@ struct task_func: public task_result<Result>, func_holder<Func>
             this->destroy_func();
     }
 
-    void run(task_base *t) LIBASYNC_NOEXCEPT override
+    void run(task_ptr t) LIBASYNC_NOEXCEPT override
     {
         LIBASYNC_TRY {
             // Dispatch to execution function
-            static_cast<task_func<Func, Result> *>(t)->get_func()(t);
+            std::static_pointer_cast<task_func<Func, Result>>(t)->get_func()(t);
         } LIBASYNC_CATCH(...) {
             cancel(t, std::current_exception());
         }
     }
 
-    void cancel(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT override
+    void cancel(task_ptr t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT override
     {
         // Destroy the function object when canceling since it won't be
         // used anymore.
-        static_cast<task_func<Func, Result> *>(t)->destroy_func();
-        static_cast<task_func<Func, Result> *>(t)->cancel_base(std::move(except));
+        std::static_pointer_cast<task_func<Func, Result>>(t)->destroy_func();
+        std::static_pointer_cast<task_func<Func, Result>>(t)->cancel_base(std::move(except));
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void schedule(task_ptr parent, task_ptr t) override
     {
         parent->run_continuation((*(this->sched)), std::move(t));
     }
@@ -423,14 +423,15 @@ struct task_func: public task_result<Result>, func_holder<Func>
 // avoids us having to specify half of the functions in the detail namespace
 // as friend. Also, internal_task is downcast to the appropriate task_result<>.
 template<typename Task>
-typename Task::internal_task_type *get_internal_task(const Task &t)
+typename Task::internal_task_type get_internal_task(const Task &t)
 {
-    return static_cast<typename Task::internal_task_type *>(t.internal_task.get());
+    return t.get_internal_task();
 }
+
 template<typename Task>
 void set_internal_task(Task &t, task_ptr p)
 {
-    t.internal_task = std::move(p);
+    t.set_internal_task(std::move(p));
 }
 
 // Common code for task unwrapping
