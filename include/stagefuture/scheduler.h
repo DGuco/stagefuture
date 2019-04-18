@@ -49,7 +49,7 @@ class task_wait_handle
         explicit wait_exec_func(F &&f)
             : detail::func_base<Func>(std::forward<F>(f))
         {}
-        void operator()(detail::task_ptr )
+        void operator()(detail::task_ptr)
         {
             // Just call the function directly, all this wrapper does is remove
             // the task_base* parameter.
@@ -82,8 +82,8 @@ public:
         static_assert(detail::is_callable<Func()>::value, "Invalid function type passed to on_finish()");
 
         auto
-        cont = new detail::task_func<wait_exec_func < typename std::decay<Func>::type>,
-            detail::fake_void > (std::forward<Func>(func));
+            cont = new detail::task_func<wait_exec_func<typename std::decay<Func>::type>,
+                                         detail::fake_void>(std::forward<Func>(func));
         cont->sched = std::addressof(inline_scheduler());
         handle->add_continuation(inline_scheduler(), detail::task_ptr(cont));
     }
@@ -146,7 +146,7 @@ public:
     {
         if (handle) {
             handle->run(handle);
-            handle = nullptr;
+            handle.reset();
         }
     }
 

@@ -444,7 +444,7 @@ struct unwrapped_func
     void operator()(Child child_task) const
     {
         // Forward completion state and result to parent task
-        std::shared_ptr<task_result<Result>> parent = std::static_pointer_cast<task_result<Result>>(parent_task.get());
+        std::shared_ptr<task_result<Result>> parent = std::static_pointer_cast<task_result<Result>>(parent_task);
         LIBASYNC_TRY {
             if (get_internal_task(child_task)->state.load(std::memory_order_relaxed) == task_state::completed) {
                 parent->set_result(get_internal_task(child_task)->get_result(child_task));

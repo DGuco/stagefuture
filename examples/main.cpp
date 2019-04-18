@@ -111,38 +111,38 @@ int main(int argc, char *argv[])
                                                       << std::endl;
                                                   return value * 3;
                                               });
-    stage_future<std::tuple<stagefuture::stage_future<void>,
-                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
-    stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
-                                                              stagefuture::stage_future<int>> results)
-                                                {
-                                                    std::cout
-                                                        << "Task 5 executes after tasks 1 and 3. Task 3 returned "
-                                                        << std::get<1>(results).get()
-                                                        << " thread id " << std::this_thread::get_id()
-                                                        << std::endl;
-                                                });
-
-    task5.get();
-    std::cout << "Task 5 has completed" << std::endl;
-
-    stagefuture::parallel_invoke([]
-                                 {
-                                     std::cout << "This is executed in parallel..." << std::endl;
-                                 }, []
-                                 {
-                                     std::cout << "with this" << std::endl;
-                                 });
-
-    stagefuture::parallel_for(stagefuture::irange(0, 5), [](int x)
-    {
-        std::cout << x;
-    });
-    std::cout << std::endl;
-
-    int r = stagefuture::parallel_reduce({1, 2, 3, 4}, 0, [](int x, int y)
-    {
-        return x + y;
-    });
-    std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
+//    stage_future<std::tuple<stagefuture::stage_future<void>,
+//                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
+//    stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
+//                                                              stagefuture::stage_future<int>> results)
+//                                                {
+//                                                    std::cout
+//                                                        << "Task 5 executes after tasks 1 and 3. Task 3 returned "
+//                                                        << std::get<1>(results).get()
+//                                                        << " thread id " << std::this_thread::get_id()
+//                                                        << std::endl;
+//                                                });
+//
+//    task5.get();
+//    std::cout << "Task 5 has completed" << std::endl;
+//
+//    stagefuture::parallel_invoke([]
+//                                 {
+//                                     std::cout << "This is executed in parallel..." << std::endl;
+//                                 }, []
+//                                 {
+//                                     std::cout << "with this" << std::endl;
+//                                 });
+//
+//    stagefuture::parallel_for(stagefuture::irange(0, 5), [](int x)
+//    {
+//        std::cout << x;
+//    });
+//    std::cout << std::endl;
+//
+//    int r = stagefuture::parallel_reduce({1, 2, 3, 4}, 0, [](int x, int y)
+//    {
+//        return x + y;
+//    });
+//    std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
 }

@@ -6,6 +6,7 @@
 #include <functional>
 #include <utility>      // std::declval
 #include <iostream>     // std::cout
+#include <memory>
 
 struct A
 {              // abstract class
@@ -38,5 +39,14 @@ int main()
     C *ccc = new C;
     type_c __c = std::move(*ccc);
     std::cout << a << '\n';
+
+    std::shared_ptr<int> ip1 = std::make_shared<int>(10);
+    int use = ip1.use_count();
+    std::shared_ptr<int> ip2 = ip1;
+    use = ip1.use_count();
+    use = ip2.use_count();
+    ip2.reset();
+    use = ip1.use_count();
+    use = ip2.use_count();
     return 0;
 }
