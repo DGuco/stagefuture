@@ -47,13 +47,13 @@ class task_interface
 {
 public:
     // Run the associated function
-    virtual void run(task_base *t) LIBASYNC_NOEXCEPT = 0;
+    virtual void run(task_ptr t) LIBASYNC_NOEXCEPT = 0;
 
     // Cancel the task with an exception
-    virtual void cancel(task_base *t, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
+    virtual void cancel(task_ptr t, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
 
     // Schedule the task using its scheduler
-    virtual void schedule(task_base *parent, task_ptr t) = 0;
+    virtual void schedule(task_ptr parent, task_ptr t) = 0;
 };
 
 // Type-generic base task object
@@ -443,7 +443,7 @@ struct unwrapped_func
     void operator()(Child child_task) const
     {
         // Forward completion state and result to parent task
-        task_result<Result> *parent = static_cast<task_result<Result> *>(parent_task.get());
+        std::shared_ptr<task_result<Result>> parent = std::static_pointer_cast<task_result<Result>>(parent_task.get());
         LIBASYNC_TRY {
             if (get_internal_task(child_task)->state.load(std::memory_order_relaxed) == task_state::completed) {
                 parent->set_result(get_internal_task(child_task)->get_result(child_task));
@@ -462,20 +462,20 @@ struct unwrapped_func
     task_ptr parent_task;
 };
 template<typename Result, typename Func, typename Child>
-void unwrapped_finish(task_base *parent_base, Child child_task)
+void unwrapped_finish(detail::task_ptr parent_base, Child child_task)
 {
     // Destroy the parent task's function since it has been executed
     parent_base->state.store(task_state::unwrapped, std::memory_order_relaxed);
-    task_func<Func, Result> *pParentFunc = static_cast<task_func<Func, Result> *>(parent_base);
+    std::shared_ptr<task_func<Func, Result>>
+        pParentFunc = std::static_pointer_cast<task_func<Func, Result> >(parent_base);
     pParentFunc->destroy_func();
 
     // Set up a continuation on the child to set the result of the parent
     LIBASYNC_TRY {
-        parent_base->add_ref();
         child_task.then(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
     } LIBASYNC_CATCH(...) {
         // Use cancel_base here because the function object is already destroyed.
-        static_cast<task_result<Result> *>(parent_base)->cancel_base(std::current_exception());
+        std::static_pointer_cast<task_result<Result> >(parent_base)->cancel_base(std::current_exception());
     }
 }
 
@@ -488,10 +488,11 @@ struct root_exec_func: private func_base<Func>
     explicit root_exec_func(F &&f)
         : func_base<Func>(std::forward<F>(f))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
-        static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func())));
-        static_cast<task_func<root_exec_func, Result> *>(t)->destroy_func();
+        std::static_pointer_cast<task_result<Result> >(t)
+            ->set_result(detail::invoke_fake_void(std::move(this->get_func())));
+        std::static_pointer_cast<task_func<root_exec_func, Result> >(t)->destroy_func();
         t->finish();
     }
 };
@@ -502,7 +503,7 @@ struct root_exec_func<Result, Func, true>: private func_base<Func>
     explicit root_exec_func(F &&f)
         : func_base<Func>(std::forward<F>(f))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         stage_future<Result> resFuture = std::move(this->get_func())();
         unwrapped_finish<Result, root_exec_func>(t, std::move(resFuture));
@@ -519,11 +520,11 @@ struct continuation_exec_func: private func_base<Func>
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
-        static_cast<task_result<Result> *>(t)
+        std::static_pointer_cast<task_result<Result>>(t)
             ->set_result(detail::invoke_fake_void(std::move(this->get_func()), std::move(parent)));
-        static_cast<task_func<continuation_exec_func, Result> *>(t)->destroy_func();
+        std::static_pointer_cast<task_func<continuation_exec_func, Result> >(t)->destroy_func();
         t->finish();
     }
     Parent parent;
@@ -535,15 +536,16 @@ struct continuation_exec_func<Parent, Result, Func, true, false>: private func_b
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else {
-            static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func()),
-                                                                                       get_internal_task(parent)
-                                                                                           ->get_result(parent)));
-            static_cast<task_func<continuation_exec_func, Result> *>(t)->destroy_func();
+            std::static_pointer_cast<task_result<Result> >(t)
+                ->set_result(detail::invoke_fake_void(std::move(this->get_func()),
+                                                      get_internal_task(parent)
+                                                          ->get_result(parent)));
+            std::static_pointer_cast<task_func<continuation_exec_func, Result>>(t)->destroy_func();
             t->finish();
         }
     }
@@ -556,7 +558,7 @@ struct continuation_exec_func<Parent, Result, Func, false, true>: private func_b
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         unwrapped_finish<Result, continuation_exec_func>(t,
                                                          detail::invoke_fake_void(std::move(this->get_func()),
@@ -571,7 +573,7 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));

@@ -98,7 +98,8 @@ class continuation_vector
     // Heap-allocated data for the slow path
     struct vector_data
     {
-        std::vector<task_base *> vector;
+        typedef typename std::vector<task_ptr *>::iterator task_iterator;
+        std::vector<task_ptr *> vector;
         std::mutex lock;
     };
 
@@ -140,14 +141,20 @@ public:
         internal_data data = atomic_data.load(std::memory_order_relaxed);
         if (data.get_flags() & flags::is_vector) {
             // No need to lock the mutex, we are the only thread at this point
-            for (task_base *i: data.get_ptr<vector_data>()->vector)
-                (task_ptr(i));
+            for (task_ptr *taskPtr : data.get_ptr<vector_data>()->vector) {
+                delete taskPtr;
+                taskPtr == nullptr;
+            }
             delete data.get_ptr<vector_data>();
         }
         else {
             // If the data is locked then the inline pointer is already gone
-            if (!(data.get_flags() & flags::is_locked))
-                task_ptr tmp(data.get_ptr<task_base>());
+            if (!(data.get_flags() & flags::is_locked)) {
+                task_ptr *taskPtr = data.get_ptr<task_ptr>();
+                delete taskPtr;
+                taskPtr == nullptr;
+            }
+
         }
     }
 
@@ -162,6 +169,7 @@ public:
         // Compare-exchange loop on atomic_data
         internal_data data = atomic_data.load(std::memory_order_relaxed);
         internal_data new_data;
+        task_ptr *taskPtr = new task_ptr(t);
         do {
             // Return immediately if the vector is locked
             if (data.get_flags() & flags::is_locked)
@@ -178,14 +186,14 @@ public:
                     return false;
 
                 // Add the element to the vector and return
-                data.get_ptr<vector_data>()->vector.push_back(t.release());
+                data.get_ptr<vector_data>()->vector.push_back(taskPtr);
                 return true;
             }
             else {
                 if (data.get_ptr<task_base>()) {
                     // Going from 1 to 2 elements, allocate a vector_data
                     if (!vector)
-                        vector.reset(new vector_data{{data.get_ptr<task_base>(), t.get()}, {}});
+                        vector.reset(new vector_data{{data.get_ptr<task_ptr>(), taskPtr}, {}});
                     new_data = {vector.get(), flags::is_vector};
                 }
                 else {
@@ -200,7 +208,6 @@ public:
         // If we reach this point then atomic_data was successfully changed.
         // Since the pointers are now saved in the vector, release them from
         // the smart pointers.
-        t.release();
         vector.release();
         return true;
     }
@@ -221,20 +228,31 @@ public:
 
         if (data.get_flags() & flags::is_vector) {
             // If we are using vector_data, lock it and flush all elements
-            std::lock_guard<std::mutex> locked(data.get_ptr<vector_data>()->lock);
-            for (auto i: data.get_ptr<vector_data>()->vector)
-                func(task_ptr(i));
+            vector_data *pData = data.get_ptr<vector_data>();
+            std::lock_guard<std::mutex> locked(pData->lock);
+            std::for_each(pData->vector, [&func](vector_data::task_iterator task_iterator)
+                -> void
+            {
+                func(task_ptr(*(*task_iterator)));
+            });
 
             // Clear the vector to save memory. Note that we don't actually free
             // the vector_data here because other threads may still be using it.
             // This isn't a very significant cost since multiple continuations
             // are relatively rare.
-            data.get_ptr<vector_data>()->vector.clear();
+            std::for_each(pData->vector, [](vector_data::task_iterator task_iterator)
+                -> void
+            {
+                task_ptr *taskPtr = *task_iterator;
+                delete taskPtr;
+                taskPtr = nullptr;
+            });
+            pData->vector.clear();
         }
         else {
             // If there is an inline element, just pass it on
-            if (data.get_ptr<task_base>())
-                func(task_ptr(data.get_ptr<task_base>()));
+            if (data.get_ptr<task_ptr>())
+                func(task_ptr(*data.get_ptr<task_ptr>()));
         }
     }
 };

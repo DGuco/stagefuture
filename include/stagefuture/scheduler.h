@@ -163,11 +163,19 @@ public:
     // sent through C APIs which don't preserve types.
     void *to_void_ptr()
     {
-        return handle.release();
+        detail::task_ptr *task_ptr = new detail::task_ptr(std::move(handle));
+        handle.reset();
+        return task_ptr;
     }
+
     static task_run_handle from_void_ptr(void *ptr)
     {
-        return task_run_handle(detail::task_ptr(static_cast<detail::task_base *>(ptr)));
+
+        detail::task_ptr *pPtr = static_cast<detail::task_ptr *>(ptr);
+        task_run_handle taskRunHandle = task_run_handle(detail::task_ptr(*pPtr));
+        delete pPtr;
+        pPtr = nullptr;
+        return std::move(taskRunHandle);
     }
 };
 

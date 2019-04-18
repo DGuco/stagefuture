@@ -40,7 +40,7 @@ public:
     {}
     ~fifo_queue()
     {
-        // Free any unexecuted tasks
+        // Free any unexecuted tasks and throw unexecuted execption
         for (std::size_t i = head; i != tail; i = (i + 1) & (items.size() - 1))
             task_run_handle::from_void_ptr(items[i]);
     }
