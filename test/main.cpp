@@ -45,8 +45,9 @@ int main()
     std::shared_ptr<int> ip2 = ip1;
     use = ip1.use_count();
     use = ip2.use_count();
-    ip2.reset();
+    std::shared_ptr<int> ip3 = std::move(ip2);
     use = ip1.use_count();
     use = ip2.use_count();
+    use = ip3.use_count();
     return 0;
 }
