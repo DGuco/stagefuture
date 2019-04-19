@@ -369,10 +369,6 @@ public:
         detail::set_internal_task(out, std::move(this->internal_task));
         return out;
     }
-private:
-    template<typename Sched, typename Func>
-    static stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-    shedule_task(Sched &sched, Func &&f);
 };
 
 template<typename Result>
@@ -622,13 +618,14 @@ shedule_task(detail::scheduler &sched, Func &&f)
                                    decay_func,
                                    detail::is_stage_future<decltype(std::declval<decay_func>()())>::value> exec_func;
     stage_future<typename detail::remove_task<decltype(std::declval<decay_func>()())>::type> out;
-    detail::task_ptr task_ptr(new detail::task_func<exec_func,
-                                                    internal_result>(std::forward<Func>(f)));
-    detail::set_internal_task(out, task_ptr);
+    detail::set_internal_task(out,
+                              detail::task_ptr(new detail::task_func<exec_func,
+                                                                     internal_result>(std::forward<Func>(f))));
 
     // Avoid an expensive ref-count modification since the task isn't shared yet
+    detail::get_internal_task(out)->add_ref_unlocked();
     detail::get_internal_task(out)->sched = std::addressof(sched);
-    detail::schedule_task(sched, task_ptr);
+    detail::schedule_task(sched, detail::task_ptr(detail::get_internal_task(out)));
     return out;
 }
 
