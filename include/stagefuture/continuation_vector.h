@@ -246,8 +246,11 @@ public:
         }
         else {
             // If there is an inline element, just pass it on
-            if (data.get_ptr<task_ptr>())
-                func(task_ptr(*data.get_ptr<task_ptr>()));
+            task_ptr *pPtr = data.get_ptr<task_ptr>();
+            if (pPtr) {
+                task_ptr taskPtr = *(pPtr);
+                func(taskPtr);
+            }
         }
     }
 };

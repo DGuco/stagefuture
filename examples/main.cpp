@@ -45,20 +45,20 @@ int main(int argc, char *argv[])
     std::string str = "100";
     stage_future<int> task11 =
         stagefuture::supply_async(singleThreadScheduler,
-                                  [&scheduler, &str]() -> stage_future<int>
+                                  [&scheduler, str]() -> stage_future<int>
                                   {
                                       std::cout
                                           << "=======create task11========="
                                           << str
                                           << std::endl;
-                                      str = std::to_string(std::stoi(str) * 100);
-                                      stage_future<int> res = stagefuture::supply_async(scheduler, [&str]() -> int
+                                      std::string str1 = std::to_string(std::stoi(str) * 100);
+                                      stage_future<int> res = stagefuture::supply_async(scheduler, [str1]() -> int
                                       {
                                           std::cout
                                               << "======== in create task11 ========"
-                                              << str
+                                              << str1
                                               << std::endl;
-                                          return std::stoi(str);
+                                          return std::stoi(str1);
                                       });
                                       std::cout
                                           << "=======create task11 end ========="
