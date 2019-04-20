@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
                                           << "=======create task11========="
                                           << str
                                           << std::endl;
-                                      str = std::to_string(atoi(str.c_str()) * 100);
+                                      str = std::to_string(std::stoi(str) * 100);
                                       stage_future<int> res = stagefuture::supply_async(scheduler, [&str]() -> int
                                       {
                                           std::cout
                                               << "======== in create task11 ========"
                                               << str
                                               << std::endl;
-                                          return atoi(str.c_str());
+                                          return std::stoi(str);
                                       });
                                       std::cout
                                           << "=======create task11 end ========="
