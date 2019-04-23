@@ -49,5 +49,12 @@ int main()
     use = ip1.use_count();
     use = ip2.use_count();
     use = ip3.use_count();
+    ip3.reset();
+    if(ip3) {
+        std::cout << "Ok" << std::endl;
+    }
+    else{
+        std::cout << "failed" << std::endl;
+    }
     return 0;
 }

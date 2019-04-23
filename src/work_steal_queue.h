@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
 #ifndef ASYNCXX_H_
 # error "Do not include this header directly, include <async++.h> instead."
 #endif
@@ -145,6 +146,7 @@ public:
         // If the queue is empty, restore bottom and exit
         if (to_signed(b - t) < 0) {
             bottom.store(b + 1, std::memory_order_relaxed);
+            std::cout << "............................" << std::endl;
             return task_run_handle();
         }
 
@@ -156,6 +158,7 @@ public:
         if (b == t) {
             if (!top.compare_exchange_strong(t, t + 1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
                 bottom.store(b + 1, std::memory_order_relaxed);
+                std::cout << "............................" << std::endl;
                 return task_run_handle();
             }
             bottom.store(b + 1, std::memory_order_relaxed);

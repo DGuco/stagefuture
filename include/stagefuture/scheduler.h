@@ -121,7 +121,8 @@ public:
     task_run_handle(const task_run_handle &other) = delete;
     task_run_handle(task_run_handle &&other) LIBASYNC_NOEXCEPT
         : handle(std::move(other.handle))
-    {}
+    {
+    }
     task_run_handle &operator=(task_run_handle &&other) LIBASYNC_NOEXCEPT
     {
         handle = std::move(other.handle);
@@ -131,8 +132,9 @@ public:
     // If the task is not executed, cancel it with an exception
     ~task_run_handle()
     {
-        if (handle)
+        if (handle){
             handle->cancel(handle, std::make_exception_ptr(task_not_executed()));
+        }
     }
 
     // Check if the handle is valid
@@ -172,9 +174,11 @@ public:
     {
 
         detail::task_ptr *pPtr = static_cast<detail::task_ptr *>(ptr);
+        int use = pPtr->use_count();
         task_run_handle taskRunHandle = task_run_handle(detail::task_ptr(*pPtr));
         delete pPtr;
         pPtr = nullptr;
+        use = taskRunHandle.handle.use_count();
         return std::move(taskRunHandle);
     }
 };

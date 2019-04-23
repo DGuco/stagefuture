@@ -22,6 +22,7 @@
 #include <iostream>
 #include <chrono>
 #include <string>
+#include <zconf.h>
 
 using namespace stagefuture;
 
@@ -30,10 +31,10 @@ int main(int argc, char *argv[])
 {
     //testSort();
     int test_a = 10;
-    threadpool_scheduler scheduler(1);
-    single_thread_scheduler singleThreadScheduler;
+    threadpool_scheduler *scheduler = new threadpool_scheduler(1);
+    single_thread_scheduler *singleThreadScheduler = new single_thread_scheduler;
     int a = 0;
-    stage_future<void> task1 = stagefuture::run_async(singleThreadScheduler,
+    stage_future<void> task1 = stagefuture::run_async(*singleThreadScheduler,
                                                       [test_a]() -> void
                                                       {
                                                           std::cout
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 
     std::string str = "100";
     stage_future<int> task11 =
-        stagefuture::supply_async(singleThreadScheduler,
+        stagefuture::supply_async(*singleThreadScheduler,
                                   [&scheduler, str]() -> stage_future<int>
                                   {
                                       std::cout
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
                                           << str
                                           << std::endl;
                                       std::string str1 = std::to_string(std::stoi(str) * 100);
-                                      stage_future<int> res = stagefuture::supply_async(scheduler, [str1]() -> int
+                                      stage_future<int> res = stagefuture::supply_async(*scheduler, [str1]() -> int
                                       {
                                           std::cout
                                               << "======== in create task11 ========"
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
         task11.thenApply([&scheduler](int value) -> stage_future<std::string>
                          {
                              value *= 100;
-                             auto res = stagefuture::supply_async(scheduler, [value]() -> std::string
+                             auto res = stagefuture::supply_async(*scheduler, [value]() -> std::string
                              {
                                  std::cout
                                      << "=======create ttt========="
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
                                      << std::endl;
                                  return std::to_string(value);
                              });
+                             std::cout << "44444444444444" << std::endl;
                              value *= 100;
                          });
 
@@ -92,7 +94,7 @@ int main(int argc, char *argv[])
                            << std::endl;
                    });
 
-    stage_future<int> task2 = stagefuture::supply_async(singleThreadScheduler,
+    stage_future<int> task2 = stagefuture::supply_async(*singleThreadScheduler,
                                                         []() -> int
                                                         {
                                                             std::cout
@@ -145,4 +147,5 @@ int main(int argc, char *argv[])
 //        return x + y;
 //    });
 //    std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
+    usleep(100000);
 }

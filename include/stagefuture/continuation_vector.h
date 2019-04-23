@@ -197,7 +197,7 @@ public:
                 }
                 else {
                     // Going from 0 to 1 elements
-                    new_data = {t.get(), 0};
+                    new_data = {taskPtr, 0};
                 }
             }
         }
