@@ -143,14 +143,23 @@ typename void_to_fake_void<decltype(std::declval<Func>()())>::type invoke_fake_v
 }
 
 //Various properties of a continuation function
+//Func operator()参数为非stage_future，task中没有嵌套stage_future
 template<typename Func, typename Parent, typename = decltype(std::declval<Func>()(std::declval<Parent>().get()))>
 std::true_type is_value_cont_helper(const Parent &, int, int);
+
+//Func operator()参数为非void
 template<typename Func, typename = decltype(std::declval<Func>()())>
 std::true_type is_value_cont_helper(const stage_future<void> &, int, int);
+
+//Func operator()参数为非void
 template<typename Func, typename = decltype(std::declval<Func>()())>
 std::true_type is_value_cont_helper(const shared_stage_future<void> &, int, int);
+
+//Func operator()参数为stage_future，task中嵌套stage_future
 template<typename Func, typename Parent, typename = decltype(std::declval<Func>()(std::declval<Parent>()))>
 std::false_type is_value_cont_helper(const Parent &, int, ...);
+
+//非法的Parent和func
 template<typename Func, typename Parent>
 void is_value_cont_helper(const Parent &, ...);
 template<typename Parent, typename Func>

@@ -14,6 +14,14 @@ struct A
 
 struct C
 {
+    C()
+    {
+
+    }
+    float operator()()
+    {
+
+    }
     int a;
 };
 
@@ -35,8 +43,10 @@ int main()
     decltype(B(0, 0).value()) c;   // same as above (known constructor)
     a = b = B(10, 2).value();
     typedef decltype(std::declval<C>()) type_c;
+    typedef decltype(std::declval<C>()()) type_cc;
     C *ccc = new C;
     type_c __c = std::move(*ccc);
+    type_cc __cc = 0.001f;
     std::cout << a << '\n';
     return 0;
 }
