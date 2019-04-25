@@ -22,6 +22,7 @@
 #include <iostream>
 #include <chrono>
 #include <string>
+#include <zconf.h>
 
 using namespace stagefuture;
 
@@ -47,18 +48,20 @@ int main(int argc, char *argv[])
         stagefuture::supply_async(scheduler,
                                   [&singleThreadScheduler, &str]() -> stage_future<int>
                                   {
+                                      std::string str1 = std::to_string(std::stoi(str) * 100);
                                       std::cout
                                           << "=======create task11========="
-                                          << str
+                                          << str1
                                           << std::endl;
-                                      str = std::to_string(std::stoi(str) * 100);
-                                      stage_future<int> res = stagefuture::supply_async(singleThreadScheduler, [&str]() -> int
+                                      stage_future<int>
+                                          res = stagefuture::supply_async(singleThreadScheduler, [&str1]() -> int
                                       {
                                           std::cout
-                                              << "======== in create task11 ========"
-                                              << str
+                                              << "======== in create task11 "
+                                              << str1.data()
+                                              << "========"
                                               << std::endl;
-                                          return std::stoi(str);
+                                          return std::stoi(str1);
                                       });
                                       std::cout
                                           << "=======create task11 end ========="
@@ -146,4 +149,5 @@ int main(int argc, char *argv[])
         return x + y;
     });
     std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
+    usleep(10000);
 }

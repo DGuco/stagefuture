@@ -18,6 +18,9 @@ struct C
     {
 
     }
+    ~C(){
+        printf("~~~~~\n");
+    }
     float operator()()
     {
 
@@ -36,6 +39,7 @@ public:
     { return val_; }
 };
 
+
 int main()
 {
     decltype(std::declval<A>().value()) a;  // int a
@@ -48,5 +52,14 @@ int main()
     type_c __c = std::move(*ccc);
     type_cc __cc = 0.001f;
     std::cout << a << '\n';
+    std::function<void()> func;
+    {
+        std::string sss("22222222");
+        func = [&sss]() -> void
+        {
+            std::cout << "func" << sss.data() << std::endl;
+        };
+    }
+    func();
     return 0;
 }
