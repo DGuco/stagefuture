@@ -148,4 +148,5 @@ int main(int argc, char *argv[])
 //    });
 //    std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
     usleep(100000);
+    printf("Main done\n");
 }
