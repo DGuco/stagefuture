@@ -166,7 +166,6 @@ public:
     void *to_void_ptr()
     {
         detail::task_ptr *task_ptr = new detail::task_ptr(std::move(handle));
-        handle.reset();
         return task_ptr;
     }
 
@@ -174,11 +173,9 @@ public:
     {
 
         detail::task_ptr *pPtr = static_cast<detail::task_ptr *>(ptr);
-        int use = pPtr->use_count();
         task_run_handle taskRunHandle = task_run_handle(detail::task_ptr(*pPtr));
         delete pPtr;
         pPtr = nullptr;
-        use = taskRunHandle.handle.use_count();
         return std::move(taskRunHandle);
     }
 };
