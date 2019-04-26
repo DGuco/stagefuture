@@ -47,6 +47,11 @@ struct LIBASYNC_CACHELINE_ALIGN thread_data_t
 // Internal data used by threadpool_scheduler
 struct threadpool_data
 {
+    ~threadpool_data()
+    {
+        printf("!!!!!!!~threadpool_data!!!!!!!!\n");
+    }
+
     threadpool_data(std::size_t num_threads)
         : thread_data(num_threads), shutdown(false), num_waiters(0), waiters(new task_wait_event *[num_threads])
     {}
@@ -201,7 +206,12 @@ static void thread_task_loop(threadpool_data *impl, std::size_t thread_id, task_
 
         // Try to get a task from the local queue
         if (task_run_handle t = current_thread.queue.pop()) {
+            printf("t.run() thread id %ld \n",std::this_thread::get_id());
             t.run();
+            if (impl == nullptr) {
+                printf("impl == null thread id %d\n",std::this_thread::get_id());
+            }
+            printf("impl->shutdown %ld\n", impl->shutdown);
             continue;
         }
 
@@ -330,7 +340,9 @@ static void recursive_spawn_worker_thread(threadpool_data *impl, std::size_t ind
 
 threadpool_scheduler::threadpool_scheduler(threadpool_scheduler &&other)
     : impl(std::move(other.impl))
-{}
+{
+    printf("!!!!!! move threadpool_scheduler!!!!!!!!\n");
+}
 
 threadpool_scheduler::threadpool_scheduler(std::size_t num_threads)
     : impl(new detail::threadpool_data(num_threads))
@@ -357,6 +369,7 @@ threadpool_scheduler::threadpool_scheduler(std::size_t num_threads,
 // Wait for all currently running tasks to finish
 threadpool_scheduler::~threadpool_scheduler()
 {
+    printf("!!!!!!~threadpool_scheduler!!!!!!!!\n");
     if (!impl) return;
 #ifdef _WIN32
     // Windows kills all threads except one on process exit before calling

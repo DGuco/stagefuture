@@ -146,12 +146,6 @@ fifo_queue.h
 work_steal_queue.h
 /home/dguco/workspace/cpp/stagefuture/src/work_steal_queue.h
 
-/home/dguco/workspace/cpp/stagefuture/src/scheduler.cpp
-internal.h
-/home/dguco/workspace/cpp/stagefuture/src/internal.h
-pthread.h
--
-
 /home/dguco/workspace/cpp/stagefuture/src/singleton.h
 
 /home/dguco/workspace/cpp/stagefuture/src/task_wait_event.h

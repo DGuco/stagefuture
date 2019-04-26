@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
     //testSort();
     int test_a = 10;
     threadpool_scheduler *scheduler = new threadpool_scheduler(1);
-    single_thread_scheduler *singleThreadScheduler = new single_thread_scheduler;
+//    single_thread_scheduler *singleThreadScheduler = new single_thread_scheduler;
     int a = 0;
-    stage_future<void> task1 = stagefuture::run_async(*singleThreadScheduler,
+    stage_future<void> task1 = stagefuture::run_async(*scheduler,
                                                       [test_a]() -> void
                                                       {
                                                           std::cout
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     std::string str = "100";
     stage_future<int> task11 =
-        stagefuture::supply_async(*singleThreadScheduler,
+        stagefuture::supply_async(*scheduler,
                                   [&scheduler, str]() -> stage_future<int>
                                   {
                                       std::cout
@@ -83,36 +83,36 @@ int main(int argc, char *argv[])
                              std::cout << "44444444444444" << std::endl;
                              value *= 100;
                          });
-
-    std::cout
-        << "****************************************************" << std::endl;
-    ttt.thenAccept([](std::string value) -> void
-                   {
-                       std::cout
-                           << "Task ttt executes in parallel with stage_future 1"
-                           << value
-                           << std::endl;
-                   });
-
-    stage_future<int> task2 = stagefuture::supply_async(*singleThreadScheduler,
-                                                        []() -> int
-                                                        {
-                                                            std::cout
-                                                                << "Task 2 executes in parallel with stage_future 1"
-                                                                << " thread id " << std::this_thread::get_id()
-                                                                << std::endl;
-                                                            return 42;
-                                                        });
-
-    stage_future<int> task3 = task2.thenApply([](int value) -> int
-                                              {
-                                                  std::cout
-                                                      << "Task 3 executes after stage_future 2, which returned "
-                                                      << value
-                                                      << " thread id " << std::this_thread::get_id()
-                                                      << std::endl;
-                                                  return value * 3;
-                                              });
+//
+//    std::cout
+//        << "****************************************************" << std::endl;
+//    ttt.thenAccept([](std::string value) -> void
+//                   {
+//                       std::cout
+//                           << "Task ttt executes in parallel with stage_future 1"
+//                           << value
+//                           << std::endl;
+//                   });
+//
+//    stage_future<int> task2 = stagefuture::supply_async(*scheduler,
+//                                                        []() -> int
+//                                                        {
+//                                                            std::cout
+//                                                                << "Task 2 executes in parallel with stage_future 1"
+//                                                                << " thread id " << std::this_thread::get_id()
+//                                                                << std::endl;
+//                                                            return 42;
+//                                                        });
+//
+//    stage_future<int> task3 = task2.thenApply([](int value) -> int
+//                                              {
+//                                                  std::cout
+//                                                      << "Task 3 executes after stage_future 2, which returned "
+//                                                      << value
+//                                                      << " thread id " << std::this_thread::get_id()
+//                                                      << std::endl;
+//                                                  return value * 3;
+//                                              });
 //    stage_future<std::tuple<stagefuture::stage_future<void>,
 //                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
 //    stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
@@ -147,6 +147,6 @@ int main(int argc, char *argv[])
 //        return x + y;
 //    });
 //    std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
-    usleep(100000);
+    usleep(1000000);
     printf("Main done\n");
 }
