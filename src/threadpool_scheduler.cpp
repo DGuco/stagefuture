@@ -209,7 +209,7 @@ static void thread_task_loop(threadpool_data *impl, std::size_t thread_id, task_
             printf("t.run() thread id %ld \n",std::this_thread::get_id());
             t.run();
             if (impl == nullptr) {
-                printf("impl == null thread id %d\n",std::this_thread::get_id());
+                printf("impl == null thread id %ld\n",std::this_thread::get_id());
             }
             printf("impl->shutdown %ld\n", impl->shutdown);
             continue;
