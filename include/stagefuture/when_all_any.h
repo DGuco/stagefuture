@@ -286,7 +286,7 @@ stage_future<std::tuple<typename std::decay<T>::type...>> when_all(T &&... tasks
 
     // Create shared state
     auto state = new detail::when_all_state<result_type>(sizeof...(tasks));
-    auto out = state->event.get_task();
+    stage_future<std::tuple<typename std::decay<T>::type...>> out = state->event.get_task();
 
     // Register all the tasks on the event
     detail::when_all_variadic<0>(state, std::forward<T>(tasks)...);

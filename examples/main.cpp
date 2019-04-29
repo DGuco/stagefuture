@@ -114,8 +114,7 @@ int main(int argc, char *argv[])
                                                       << std::endl;
                                                   return value * 3;
                                               });
-    stage_future<std::tuple<stagefuture::stage_future<void>,
-                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
+    auto task4 = stagefuture::when_all(task1, task3);
     stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
                                                               stagefuture::stage_future<int>> results)
                                                 {

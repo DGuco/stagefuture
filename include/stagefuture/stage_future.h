@@ -51,10 +51,6 @@ public:
     // Friend access
     friend stagefuture::stage_future<Result>;
     friend stagefuture::shared_stage_future<Result>;
-    template<typename T>
-    friend typename T::internal_task_type get_internal_task(const T &t);
-    template<typename T>
-    friend void set_internal_task(T &t, task_ptr p);
 
     internal_task_type get_internal_task() const
     {
@@ -162,8 +158,6 @@ class basic_event
 
     // Friend access
     friend stagefuture::event_event<Result>;
-    template<typename T>
-    friend typename T::internal_task_type get_internal_task(const T &t);
 
     internal_task_type get_internal_task() const
     {
