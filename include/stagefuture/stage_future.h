@@ -155,14 +155,25 @@ class basic_event
 
     // Real result type, with void turned into fake_void
     typedef typename detail::void_to_fake_void<Result>::type internal_result;
+    typedef task_result<internal_result> task_type;
 
     // Type-specific task object
-    typedef detail::task_result<internal_result> internal_task_type;
+    typedef std::shared_ptr<task_type> internal_task_type;
 
     // Friend access
     friend stagefuture::event_event<Result>;
     template<typename T>
-    friend typename T::internal_task_type *get_internal_task(const T &t);
+    friend typename T::internal_task_type get_internal_task(const T &t);
+
+    internal_task_type get_internal_task() const
+    {
+        return std::static_pointer_cast<task_type>(internal_task);
+    }
+
+    void set_internal_task(task_ptr p)
+    {
+        internal_task = p;
+    }
 
     // Common code for set()
     template<typename T>
@@ -180,7 +191,7 @@ class basic_event
 
         LIBASYNC_TRY {
             // Store the result and finish
-            get_internal_task(*this)->set_result(std::forward<T>(result));
+            get_internal_task()->set_result(std::forward<T>(result));
             internal_task->finish();
         } LIBASYNC_CATCH(...) {
             // At this point we have already committed to setting a value, so
@@ -188,7 +199,7 @@ class basic_event
             // could cause concurrent set() calls to fail, thinking a value has
             // already been set. Instead, we simply cancel the task with the
             // exception we just got.
-            get_internal_task(*this)->cancel_base(std::current_exception());
+            get_internal_task()->cancel_base(std::current_exception());
         }
         return true;
     }
@@ -237,7 +248,7 @@ public:
         // already been returned.
         stage_future<Result> out;
         if (!internal_task->event_task_got_task)
-            set_internal_task(out, internal_task);
+            out.set_internal_task(internal_task);
         internal_task->event_task_got_task = true;
         return out;
     }
@@ -256,7 +267,7 @@ public:
             return false;
 
         // Cancel the task
-        get_internal_task(*this)->cancel_base(std::move(except));
+        get_internal_task()->cancel_base(std::move(except));
         return true;
     }
 };
@@ -521,7 +532,7 @@ class local_future
         : internal_task(std::make_shared<detail::task_func<exec_func, internal_result>>(std::forward<Func>(f)))
     {
         // Avoid an expensive ref-count modification since the task isn't shared yet
-        detail::schedule_task(sched, detail::task_ptr(&internal_task));
+        detail::schedule_task(sched, detail::task_ptr(std::static_pointer_cast<detail::task_base>(internal_task)));
     }
 
 public:
