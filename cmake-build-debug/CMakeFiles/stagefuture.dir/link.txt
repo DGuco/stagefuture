@@ -1,1 +1,0 @@
-/usr/bin/g++ -fPIC -g  -shared -Wl,-soname,libstagefuture.so -o libstagefuture.so CMakeFiles/stagefuture.dir/src/scheduler.cpp.o CMakeFiles/stagefuture.dir/src/threadpool_scheduler.cpp.o CMakeFiles/stagefuture.dir/test/main.cpp.o -pthread 
