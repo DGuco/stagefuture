@@ -33,6 +33,8 @@ class threadpool_scheduler;
 // void schedule(stagefuture::task_run_handle t);
 // This function should result in t.run() being called at some stage_future point.
 
+#include <memory>
+
 namespace detail
 {
 
@@ -45,7 +47,7 @@ public:
 // Reference counted pointer to task data
 struct task_base;
 
-typedef ref_count_ptr<task_base> task_ptr;
+typedef std::shared_ptr<task_base> task_ptr;
 
 //
 //// Helper function to schedule a task using a scheduler
@@ -53,7 +55,7 @@ void schedule_task(detail::scheduler &sched, task_ptr t);
 
 // Wait for the given task to finish. This will call the wait handler currently
 // active for this thread, which causes the thread to sleep by default.
-LIBASYNC_EXPORT void wait_for_task(task_base *wait_task);
+LIBASYNC_EXPORT void wait_for_task(task_ptr wait_task);
 
 // Forward-declaration for data used by threadpool_scheduler
 struct threadpool_data;

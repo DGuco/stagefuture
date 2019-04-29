@@ -37,22 +37,30 @@ namespace detail
 template<typename Result>
 class basic_future
 {
+private:
     // Reference counted internal task object
     detail::task_ptr internal_task;
 
+public:
     // Real result type, with void turned into fake_void
     typedef typename void_to_fake_void<Result>::type internal_result;
 
     // Type-specific task object
-    typedef task_result<internal_result> internal_task_type;
-
+    typedef task_result<internal_result> task_type;
+    typedef std::shared_ptr<task_type> internal_task_type;
     // Friend access
     friend stagefuture::stage_future<Result>;
     friend stagefuture::shared_stage_future<Result>;
-    template<typename T>
-    friend typename T::internal_task_type *get_internal_task(const T &t);
-    template<typename T>
-    friend void set_internal_task(T &t, task_ptr p);
+
+    internal_task_type get_internal_task() const
+    {
+        return std::static_pointer_cast<task_type>(internal_task);
+    }
+
+    void set_internal_task(task_ptr p)
+    {
+        internal_task = p;
+    }
 
     // Common code for get()
     void get_internal() const
@@ -60,7 +68,7 @@ class basic_future
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty task object");
 
         // If the task was canceled, throw the associated exception
-        get_internal_task(*this)->wait_and_throw();
+        get_internal_task()->wait_and_throw();
     }
 
     // Common code for then()
@@ -82,16 +90,13 @@ class basic_future
                                        traits::is_value_cont::value,
                                        is_stage_future<typename traits::result_type>::value> exec_func;
         typename traits::future_type cont;
-        set_internal_task(cont,
-                          task_ptr(new task_func<exec_func, cont_internal_result>(std::forward<Func>(f),
-                                                                                  std::forward<Parent>(parent))));
+        task_ptr taskPtr = task_ptr(new task_func<exec_func, cont_internal_result>(std::forward<Func>(f),
+                                                                                   std::forward<Parent>(parent)));
+        cont.set_internal_task(taskPtr);
 
+        cont.get_internal_task()->sched = std::addressof(sched);
         // Add the continuation to this task
-        // Avoid an expensive ref-count modification since the task isn't shared yet
-        get_internal_task(cont)->add_ref_unlocked();
-        get_internal_task(cont)->sched = std::addressof(sched);
-        my_internal->add_continuation(sched, task_ptr(get_internal_task(cont)));
-
+        my_internal->add_continuation(sched, taskPtr);
         return cont;
     }
 
@@ -146,14 +151,23 @@ class basic_event
 
     // Real result type, with void turned into fake_void
     typedef typename detail::void_to_fake_void<Result>::type internal_result;
+    typedef task_result<internal_result> task_type;
 
     // Type-specific task object
-    typedef detail::task_result<internal_result> internal_task_type;
+    typedef std::shared_ptr<task_type> internal_task_type;
 
     // Friend access
     friend stagefuture::event_event<Result>;
-    template<typename T>
-    friend typename T::internal_task_type *get_internal_task(const T &t);
+
+    internal_task_type get_internal_task() const
+    {
+        return std::static_pointer_cast<task_type>(internal_task);
+    }
+
+    void set_internal_task(task_ptr p)
+    {
+        internal_task = p;
+    }
 
     // Common code for set()
     template<typename T>
@@ -171,7 +185,7 @@ class basic_event
 
         LIBASYNC_TRY {
             // Store the result and finish
-            get_internal_task(*this)->set_result(std::forward<T>(result));
+            get_internal_task()->set_result(std::forward<T>(result));
             internal_task->finish();
         } LIBASYNC_CATCH(...) {
             // At this point we have already committed to setting a value, so
@@ -179,7 +193,7 @@ class basic_event
             // could cause concurrent set() calls to fail, thinking a value has
             // already been set. Instead, we simply cancel the task with the
             // exception we just got.
-            get_internal_task(*this)->cancel_base(std::current_exception());
+            get_internal_task()->cancel_base(std::current_exception());
         }
         return true;
     }
@@ -197,7 +211,7 @@ public:
 
     // Main constructor
     basic_event()
-        : internal_task(new internal_task_type)
+        : internal_task(std::make_shared<task_type>())
     {
         internal_task->event_task_got_task = false;
     }
@@ -206,7 +220,7 @@ public:
     ~basic_event()
     {
         // This check isn't thread-safe but set_exception does a proper check
-        if (internal_task && !internal_task->ready() && !internal_task->is_unique_ref(std::memory_order_relaxed)) {
+        if (internal_task && !internal_task->ready() && !internal_task.use_count() == 1) {
 #ifdef LIBASYNC_NO_EXCEPTIONS
             // This will result in an abort if the task result is read
             set_exception(std::exception_ptr());
@@ -228,7 +242,7 @@ public:
         // already been returned.
         stage_future<Result> out;
         if (!internal_task->event_task_got_task)
-            set_internal_task(out, internal_task);
+            out.set_internal_task(internal_task);
         internal_task->event_task_got_task = true;
         return out;
     }
@@ -247,7 +261,7 @@ public:
             return false;
 
         // Cancel the task
-        get_internal_task(*this)->cancel_base(std::move(except));
+        get_internal_task()->cancel_base(std::move(except));
         return true;
     }
 };
@@ -277,7 +291,7 @@ public:
         // Move the internal state pointer so that the task becomes invalid,
         // even if an exception is thrown.
         detail::task_ptr my_internal = std::move(this->internal_task);
-        return detail::fake_void_to_void(static_cast<typename stage_future::internal_task_type *>(my_internal.get())
+        return detail::fake_void_to_void(static_cast<typename stage_future::task_type *>(my_internal.get())
                                              ->get_result(*this));
     }
 
@@ -499,7 +513,7 @@ class local_future
 
     // Task object embedded directly. The ref-count is initialized to 1 so it
     // will never be freed using delete, only when the local_future is destroyed.
-    detail::task_func<exec_func, internal_result> internal_task;
+    std::shared_ptr<detail::task_func<exec_func, internal_result>> internal_task;
 
     // Friend access for local_spawn
     template<typename F>
@@ -509,11 +523,10 @@ class local_future
 
     // Constructor, used by local_spawn
     local_future(detail::scheduler &sched, Func &&f)
-        : internal_task(std::forward<Func>(f))
+        : internal_task(std::make_shared<detail::task_func<exec_func, internal_result>>(std::forward<Func>(f)))
     {
         // Avoid an expensive ref-count modification since the task isn't shared yet
-        internal_task.add_ref_unlocked();
-        detail::schedule_task(sched, detail::task_ptr(&internal_task));
+        detail::schedule_task(sched, detail::task_ptr(std::static_pointer_cast<detail::task_base>(internal_task)));
     }
 
 public:
@@ -528,7 +541,7 @@ public:
 
         // Now spin until the reference count drops to 1, since the scheduler
         // may still have a reference to the task.
-        while (!internal_task.is_unique_ref(std::memory_order_acquire)) {
+        while (!internal_task.use_count() == 1) {
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20140612
             // Some versions of libstdc++ (4.7 and below) don't include a
             // definition of std::this_thread::yield().
@@ -542,32 +555,32 @@ public:
     // Query whether the task has finished executing
     bool ready() const
     {
-        return internal_task.ready();
+        return internal_task->ready();
     }
 
     // Query whether the task has been canceled with an exception
     bool canceled() const
     {
-        return internal_task.state.load(std::memory_order_acquire) == detail::task_state::canceled;
+        return internal_task->state.load(std::memory_order_acquire) == detail::task_state::canceled;
     }
 
     // Wait for the task to complete
     void wait()
     {
-        internal_task.wait();
+        internal_task->wait();
     }
 
     // Get the result of the task
     result_type get()
     {
-        internal_task.wait_and_throw();
-        return detail::fake_void_to_void(internal_task.get_result(stage_future<result_type>()));
+        internal_task->wait_and_throw();
+        return detail::fake_void_to_void(internal_task->get_result(stage_future<result_type>()));
     }
 
     // Get the exception associated with a canceled task
     std::exception_ptr get_exception() const
     {
-        if (internal_task.wait() == detail::task_state::canceled)
+        if (internal_task->wait() == detail::task_state::canceled)
             return internal_task.get_exception();
         else
             return std::exception_ptr();
@@ -623,7 +636,6 @@ shedule_task(detail::scheduler &sched, Func &&f)
                                                                      internal_result>(std::forward<Func>(f))));
 
     // Avoid an expensive ref-count modification since the task isn't shared yet
-    detail::get_internal_task(out)->add_ref_unlocked();
     detail::get_internal_task(out)->sched = std::addressof(sched);
     detail::schedule_task(sched, detail::task_ptr(detail::get_internal_task(out)));
     return out;

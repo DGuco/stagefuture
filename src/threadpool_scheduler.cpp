@@ -47,6 +47,10 @@ struct LIBASYNC_CACHELINE_ALIGN thread_data_t
 // Internal data used by threadpool_scheduler
 struct threadpool_data
 {
+    ~threadpool_data()
+    {
+    }
+
     threadpool_data(std::size_t num_threads)
         : thread_data(num_threads), shutdown(false), num_waiters(0), waiters(new task_wait_event *[num_threads])
     {}
@@ -330,7 +334,8 @@ static void recursive_spawn_worker_thread(threadpool_data *impl, std::size_t ind
 
 threadpool_scheduler::threadpool_scheduler(threadpool_scheduler &&other)
     : impl(std::move(other.impl))
-{}
+{
+}
 
 threadpool_scheduler::threadpool_scheduler(std::size_t num_threads)
     : impl(new detail::threadpool_data(num_threads))

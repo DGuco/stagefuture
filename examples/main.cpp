@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
                                           << str1
                                           << std::endl;
                                       stage_future<int>
-                                          res = stagefuture::supply_async(singleThreadScheduler, [&str1]() -> int
+                                          res = stagefuture::supply_async(singleThreadScheduler, [str1]() -> int
                                       {
                                           std::cout
                                               << "======== in create task11 "

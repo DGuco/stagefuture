@@ -47,105 +47,105 @@ class task_interface
 {
 public:
     // Run the associated function
-    virtual void run(task_base *t) LIBASYNC_NOEXCEPT = 0;
+    virtual void run(task_ptr t) LIBASYNC_NOEXCEPT = 0;
 
     // Cancel the task with an exception
-    virtual void cancel(task_base *t, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
+    virtual void cancel(task_ptr t, std::exception_ptr &&) LIBASYNC_NOEXCEPT = 0;
 
     // Schedule the task using its scheduler
-    virtual void schedule(task_base *parent, task_ptr t) = 0;
+    virtual void schedule(task_ptr parent, task_ptr t) = 0;
 };
 
 // Type-generic base task object
 struct LIBASYNC_CACHELINE_ALIGN task_base: public task_interface,
-                                           ref_count_base<task_base, default_deleter < task_base>>
+                                           std::enable_shared_from_this<task_base>
 {
 // Task state
-std::atomic<task_state> state;
+    std::atomic<task_state> state;
 
 // Whether get_task() was already called on an event_event
-bool event_task_got_task;
+    bool event_task_got_task;
 
 // Vector of continuations
-continuation_vector continuations;
+    continuation_vector continuations;
 
 // Use aligned memory allocation
-void *operator new(std::size_t size)
-{
-    return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
-}
-void operator delete(void *ptr)
-{
-    aligned_free(ptr);
-}
+    void *operator new(std::size_t size)
+    {
+        return aligned_alloc(size, LIBASYNC_CACHELINE_SIZE);
+    }
+    void operator delete(void *ptr)
+    {
+        aligned_free(ptr);
+    }
 
 // Initialize task state
-task_base()
-    : state(task_state::pending)
-{}
+    task_base()
+        : state(task_state::pending)
+    {}
 
 // Check whether the task is ready and include an acquire barrier if it is
-bool ready() const
-{
-    return is_finished(state.load(std::memory_order_acquire));
-}
+    bool ready() const
+    {
+        return is_finished(state.load(std::memory_order_acquire));
+    }
 
 // Run a single continuation
-void run_continuation(detail::scheduler &sched, task_ptr &&cont)
-{
-    LIBASYNC_TRY {
-        detail::schedule_task(sched, std::move(cont));
-    } LIBASYNC_CATCH(...) {
-        // This is suboptimal, but better than letting the exception leak
-        cont->cancel(cont.get(), std::current_exception());
+    void run_continuation(detail::scheduler &sched, task_ptr &&cont)
+    {
+        LIBASYNC_TRY {
+            detail::schedule_task(sched, std::move(cont));
+        } LIBASYNC_CATCH(...) {
+            // This is suboptimal, but better than letting the exception leak
+            cont->cancel(cont, std::current_exception());
+        }
     }
-}
 
 // Run all of the task's continuations after it has completed or canceled.
 // The list of continuations is emptied and locked to prevent any further
 // continuations from being added.
-void run_continuations()
-{
-    continuations.flush_and_lock([this](task_ptr t)
-                                 {
-                                     t->schedule(this, std::move(t));
-                                 });
-}
+    void run_continuations()
+    {
+        continuations.flush_and_lock([this](task_ptr t)
+                                     {
+                                         t->schedule(shared_from_this(), std::move(t));
+                                     });
+    }
 
 // Add a continuation to this task
-void add_continuation(detail::scheduler &sched, task_ptr cont)
-{
-    // Check for task completion
-    task_state current_state = state.load(std::memory_order_relaxed);
-    if (!is_finished(current_state)) {
-        // Try to add the task to the continuation list. This can fail only
-        // if the task has just finished, in which case we run it directly.
-        if (continuations.try_add(std::move(cont)))
-            return;
-    }
+    void add_continuation(detail::scheduler &sched, task_ptr cont)
+    {
+        // Check for task completion
+        task_state current_state = state.load(std::memory_order_relaxed);
+        if (!is_finished(current_state)) {
+            // Try to add the task to the continuation list. This can fail only
+            // if the task has just finished, in which case we run it directly.
+            if (continuations.try_add(std::move(cont)))
+                return;
+        }
 
-    // Otherwise run the continuation directly
-    std::atomic_thread_fence(std::memory_order_acquire);
-    run_continuation(sched, std::move(cont));
-}
+        // Otherwise run the continuation directly
+        std::atomic_thread_fence(std::memory_order_acquire);
+        run_continuation(sched, std::move(cont));
+    }
 
 // Finish the task after it has been executed and the result set
-void finish()
-{
-    state.store(task_state::completed, std::memory_order_release);
-    run_continuations();
-}
+    void finish()
+    {
+        state.store(task_state::completed, std::memory_order_release);
+        run_continuations();
+    }
 
 // Wait for the task to finish executing
-task_state wait()
-{
-    task_state s = state.load(std::memory_order_acquire);
-    if (!is_finished(s)) {
-        wait_for_task(this);
-        s = state.load(std::memory_order_relaxed);
+    task_state wait()
+    {
+        task_state s = state.load(std::memory_order_acquire);
+        if (!is_finished(s)) {
+            wait_for_task(shared_from_this());
+            s = state.load(std::memory_order_relaxed);
+        }
+        return s;
     }
-    return s;
-}
 };
 
 // Result type-specific task object
@@ -288,17 +288,17 @@ struct task_result: public task_result_holder<Result>
             LIBASYNC_RETHROW_EXCEPTION(get_exception());
     }
 
-    void run(task_base *t) LIBASYNC_NOEXCEPT override
+    void run(task_ptr t) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void cancel(task_base *t, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
+    void cancel(task_ptr t, std::exception_ptr &&ptr) LIBASYNC_NOEXCEPT override
     {
 
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void schedule(task_ptr parent, task_ptr t) override
     {
 
     }
@@ -395,25 +395,25 @@ struct task_func: public task_result<Result>, func_holder<Func>
             this->destroy_func();
     }
 
-    void run(task_base *t) LIBASYNC_NOEXCEPT override
+    void run(task_ptr t) LIBASYNC_NOEXCEPT override
     {
         LIBASYNC_TRY {
             // Dispatch to execution function
-            static_cast<task_func<Func, Result> *>(t)->get_func()(t);
+            std::static_pointer_cast<task_func<Func, Result>>(t)->get_func()(t);
         } LIBASYNC_CATCH(...) {
             cancel(t, std::current_exception());
         }
     }
 
-    void cancel(task_base *t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT override
+    void cancel(task_ptr t, std::exception_ptr &&except) LIBASYNC_NOEXCEPT override
     {
         // Destroy the function object when canceling since it won't be
         // used anymore.
-        static_cast<task_func<Func, Result> *>(t)->destroy_func();
-        static_cast<task_func<Func, Result> *>(t)->cancel_base(std::move(except));
+        std::static_pointer_cast<task_func<Func, Result>>(t)->destroy_func();
+        std::static_pointer_cast<task_func<Func, Result>>(t)->cancel_base(std::move(except));
     }
 
-    void schedule(task_base *parent, task_ptr t) override
+    void schedule(task_ptr parent, task_ptr t) override
     {
         parent->run_continuation((*(this->sched)), std::move(t));
     }
@@ -423,14 +423,15 @@ struct task_func: public task_result<Result>, func_holder<Func>
 // avoids us having to specify half of the functions in the detail namespace
 // as friend. Also, internal_task is downcast to the appropriate task_result<>.
 template<typename Task>
-typename Task::internal_task_type *get_internal_task(const Task &t)
+typename Task::internal_task_type get_internal_task(const Task &t)
 {
-    return static_cast<typename Task::internal_task_type *>(t.internal_task.get());
+    return t.get_internal_task();
 }
+
 template<typename Task>
 void set_internal_task(Task &t, task_ptr p)
 {
-    t.internal_task = std::move(p);
+    t.set_internal_task(std::move(p));
 }
 
 // Common code for task unwrapping
@@ -443,7 +444,7 @@ struct unwrapped_func
     void operator()(Child child_task) const
     {
         // Forward completion state and result to parent task
-        task_result<Result> *parent = static_cast<task_result<Result> *>(parent_task.get());
+        std::shared_ptr<task_result<Result>> parent = std::static_pointer_cast<task_result<Result>>(parent_task);
         LIBASYNC_TRY {
             if (get_internal_task(child_task)->state.load(std::memory_order_relaxed) == task_state::completed) {
                 parent->set_result(get_internal_task(child_task)->get_result(child_task));
@@ -462,20 +463,20 @@ struct unwrapped_func
     task_ptr parent_task;
 };
 template<typename Result, typename Func, typename Child>
-void unwrapped_finish(task_base *parent_base, Child child_task)
+void unwrapped_finish(detail::task_ptr parent_base, Child child_task)
 {
     // Destroy the parent task's function since it has been executed
     parent_base->state.store(task_state::unwrapped, std::memory_order_relaxed);
-    task_func<Func, Result> *pParentFunc = static_cast<task_func<Func, Result> *>(parent_base);
+    std::shared_ptr<task_func<Func, Result>>
+        pParentFunc = std::static_pointer_cast<task_func<Func, Result> >(parent_base);
     pParentFunc->destroy_func();
 
     // Set up a continuation on the child to set the result of the parent
     LIBASYNC_TRY {
-        parent_base->add_ref();
         child_task.then(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
     } LIBASYNC_CATCH(...) {
         // Use cancel_base here because the function object is already destroyed.
-        static_cast<task_result<Result> *>(parent_base)->cancel_base(std::current_exception());
+        std::static_pointer_cast<task_result<Result> >(parent_base)->cancel_base(std::current_exception());
     }
 }
 
@@ -488,10 +489,11 @@ struct root_exec_func: private func_base<Func>
     explicit root_exec_func(F &&f)
         : func_base<Func>(std::forward<F>(f))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
-        static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func())));
-        static_cast<task_func<root_exec_func, Result> *>(t)->destroy_func();
+        std::static_pointer_cast<task_result<Result> >(t)
+            ->set_result(detail::invoke_fake_void(std::move(this->get_func())));
+        std::static_pointer_cast<task_func<root_exec_func, Result> >(t)->destroy_func();
         t->finish();
     }
 };
@@ -502,7 +504,7 @@ struct root_exec_func<Result, Func, true>: private func_base<Func>
     explicit root_exec_func(F &&f)
         : func_base<Func>(std::forward<F>(f))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         stage_future<Result> resFuture = std::move(this->get_func())();
         unwrapped_finish<Result, root_exec_func>(t, std::move(resFuture));
@@ -519,11 +521,11 @@ struct continuation_exec_func: private func_base<Func>
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
-        static_cast<task_result<Result> *>(t)
+        std::static_pointer_cast<task_result<Result>>(t)
             ->set_result(detail::invoke_fake_void(std::move(this->get_func()), std::move(parent)));
-        static_cast<task_func<continuation_exec_func, Result> *>(t)->destroy_func();
+        std::static_pointer_cast<task_func<continuation_exec_func, Result> >(t)->destroy_func();
         t->finish();
     }
     Parent parent;
@@ -535,15 +537,16 @@ struct continuation_exec_func<Parent, Result, Func, true, false>: private func_b
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else {
-            static_cast<task_result<Result> *>(t)->set_result(detail::invoke_fake_void(std::move(this->get_func()),
-                                                                                       get_internal_task(parent)
-                                                                                           ->get_result(parent)));
-            static_cast<task_func<continuation_exec_func, Result> *>(t)->destroy_func();
+            std::static_pointer_cast<task_result<Result> >(t)
+                ->set_result(detail::invoke_fake_void(std::move(this->get_func()),
+                                                      get_internal_task(parent)
+                                                          ->get_result(parent)));
+            std::static_pointer_cast<task_func<continuation_exec_func, Result>>(t)->destroy_func();
             t->finish();
         }
     }
@@ -556,7 +559,7 @@ struct continuation_exec_func<Parent, Result, Func, false, true>: private func_b
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         unwrapped_finish<Result, continuation_exec_func>(t,
                                                          detail::invoke_fake_void(std::move(this->get_func()),
@@ -571,7 +574,7 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
     continuation_exec_func(F &&f, P &&p)
         : func_base<Func>(std::forward<F>(f)), parent(std::forward<P>(p))
     {}
-    void operator()(task_base *t)
+    void operator()(detail::task_ptr t)
     {
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));

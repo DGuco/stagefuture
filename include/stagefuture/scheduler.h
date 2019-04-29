@@ -33,11 +33,11 @@ LIBASYNC_EXPORT std::size_t hardware_concurrency() LIBASYNC_NOEXCEPT;
 // Task handle used by a wait handler
 class task_wait_handle
 {
-    detail::task_base *handle;
+    detail::task_ptr handle;
 
     // Allow construction in wait_for_task()
-    friend LIBASYNC_EXPORT void detail::wait_for_task(detail::task_base *t);
-    task_wait_handle(detail::task_base *t)
+    friend LIBASYNC_EXPORT void detail::wait_for_task(detail::task_ptr t);
+    task_wait_handle(detail::task_ptr t)
         : handle(t)
     {}
 
@@ -49,7 +49,7 @@ class task_wait_handle
         explicit wait_exec_func(F &&f)
             : detail::func_base<Func>(std::forward<F>(f))
         {}
-        void operator()(detail::task_base *)
+        void operator()(detail::task_ptr)
         {
             // Just call the function directly, all this wrapper does is remove
             // the task_base* parameter.
@@ -82,8 +82,8 @@ public:
         static_assert(detail::is_callable<Func()>::value, "Invalid function type passed to on_finish()");
 
         auto
-        cont = new detail::task_func<wait_exec_func < typename std::decay<Func>::type>,
-            detail::fake_void > (std::forward<Func>(func));
+            cont = new detail::task_func<wait_exec_func<typename std::decay<Func>::type>,
+                                         detail::fake_void>(std::forward<Func>(func));
         cont->sched = std::addressof(inline_scheduler());
         handle->add_continuation(inline_scheduler(), detail::task_ptr(cont));
     }
@@ -121,7 +121,8 @@ public:
     task_run_handle(const task_run_handle &other) = delete;
     task_run_handle(task_run_handle &&other) LIBASYNC_NOEXCEPT
         : handle(std::move(other.handle))
-    {}
+    {
+    }
     task_run_handle &operator=(task_run_handle &&other) LIBASYNC_NOEXCEPT
     {
         handle = std::move(other.handle);
@@ -131,8 +132,9 @@ public:
     // If the task is not executed, cancel it with an exception
     ~task_run_handle()
     {
-        if (handle)
-            handle->cancel(handle.get(), std::make_exception_ptr(task_not_executed()));
+        if (handle){
+            handle->cancel(handle, std::make_exception_ptr(task_not_executed()));
+        }
     }
 
     // Check if the handle is valid
@@ -145,8 +147,8 @@ public:
     void run()
     {
         if (handle) {
-            handle->run(handle.get());
-            handle = nullptr;
+            handle->run(handle);
+            handle.reset();
         }
     }
 
@@ -163,11 +165,18 @@ public:
     // sent through C APIs which don't preserve types.
     void *to_void_ptr()
     {
-        return handle.release();
+        detail::task_ptr *task_ptr = new detail::task_ptr(std::move(handle));
+        return task_ptr;
     }
+
     static task_run_handle from_void_ptr(void *ptr)
     {
-        return task_run_handle(detail::task_ptr(static_cast<detail::task_base *>(ptr)));
+
+        detail::task_ptr *pPtr = static_cast<detail::task_ptr *>(ptr);
+        task_run_handle taskRunHandle = task_run_handle(detail::task_ptr(*pPtr));
+        delete pPtr;
+        pPtr = nullptr;
+        return std::move(taskRunHandle);
     }
 };
 
