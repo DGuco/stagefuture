@@ -29,13 +29,12 @@ using namespace stagefuture;
 using namespace stagefuture;
 int main(int argc, char *argv[])
 {
-    printf("Main thread id %ld\n", std::this_thread::get_id());
     //testSort();
     int test_a = 10;
-    threadpool_scheduler *scheduler = new threadpool_scheduler(1);
-    single_thread_scheduler *singleThreadScheduler = new single_thread_scheduler;
+    threadpool_scheduler scheduler(1);
+    single_thread_scheduler singleThreadScheduler;
     int a = 0;
-    stage_future<void> task1 = stagefuture::run_async(*scheduler,
+    stage_future<void> task1 = stagefuture::run_async(singleThreadScheduler,
                                                       [test_a]() -> void
                                                       {
                                                           std::cout
@@ -46,33 +45,35 @@ int main(int argc, char *argv[])
 
     std::string str = "100";
     stage_future<int> task11 =
-        stagefuture::supply_async(*scheduler,
-                                  [&singleThreadScheduler, str]() -> int
+        stagefuture::supply_async(scheduler,
+                                  [&singleThreadScheduler, &str]() -> stage_future<int>
                                   {
+                                      std::string str1 = std::to_string(std::stoi(str) * 100);
                                       std::cout
                                           << "=======create task11========="
-                                          << str
+                                          << str1
                                           << std::endl;
-                                      std::string str1 = std::to_string(std::stoi(str) * 100);
-                                      stage_future<int> res = stagefuture::supply_async(*singleThreadScheduler, [str1]() -> int
+                                      stage_future<int>
+                                          res = stagefuture::supply_async(singleThreadScheduler, [&str1]() -> int
                                       {
                                           std::cout
-                                              << "======== in create task11 ========"
-                                              << str1
+                                              << "======== in create task11 "
+                                              << str1.data()
+                                              << "========"
                                               << std::endl;
                                           return std::stoi(str1);
                                       });
                                       std::cout
                                           << "=======create task11 end ========="
                                           << std::endl;
-                                      return 11;
+                                      return res;
                                   });
 
     stage_future<std::string> ttt =
-        task11.thenApplyAsync(*scheduler,[&singleThreadScheduler](int value) -> stage_future<std::string>
+        task11.thenApply([&scheduler](int value) -> stage_future<std::string>
                          {
                              value *= 100;
-                             auto res = stagefuture::supply_async(*singleThreadScheduler, [value]() -> std::string
+                             auto res = stagefuture::supply_async(scheduler, [value]() -> std::string
                              {
                                  std::cout
                                      << "=======create ttt========="
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
                            << std::endl;
                    });
 
-    stage_future<int> task2 = stagefuture::supply_async(*scheduler,
+    stage_future<int> task2 = stagefuture::supply_async(singleThreadScheduler,
                                                         []() -> int
                                                         {
                                                             std::cout
@@ -114,7 +115,8 @@ int main(int argc, char *argv[])
                                                       << std::endl;
                                                   return value * 3;
                                               });
-    auto task4 = stagefuture::when_all(task1, task3);
+    stage_future<std::tuple<stagefuture::stage_future<void>,
+                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
     stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
                                                               stagefuture::stage_future<int>> results)
                                                 {
@@ -147,6 +149,5 @@ int main(int argc, char *argv[])
         return x + y;
     });
     std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
-    usleep(1000000);
-    printf("Main done\n");
+    usleep(10000);
 }

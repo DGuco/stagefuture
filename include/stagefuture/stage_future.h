@@ -211,7 +211,7 @@ public:
 
     // Main constructor
     basic_event()
-        : internal_task(new internal_task_type)
+        : internal_task(std::make_shared<task_type>())
     {
         internal_task->event_task_got_task = false;
     }

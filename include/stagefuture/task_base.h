@@ -472,8 +472,6 @@ void unwrapped_finish(detail::task_ptr parent_base, Child child_task)
     pParentFunc->destroy_func();
 
     // Set up a continuation on the child to set the result of the parent
-    bool value = std::is_same<stage_future<Result>,Child>::value;
-    printf("is same %d\n",value);
     LIBASYNC_TRY {
         child_task.then(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
     } LIBASYNC_CATCH(...) {
@@ -525,7 +523,6 @@ struct continuation_exec_func: private func_base<Func>
     {}
     void operator()(detail::task_ptr t)
     {
-        printf("1111111111\n");
         std::static_pointer_cast<task_result<Result>>(t)
             ->set_result(detail::invoke_fake_void(std::move(this->get_func()), std::move(parent)));
         std::static_pointer_cast<task_func<continuation_exec_func, Result> >(t)->destroy_func();
@@ -542,7 +539,6 @@ struct continuation_exec_func<Parent, Result, Func, true, false>: private func_b
     {}
     void operator()(detail::task_ptr t)
     {
-        printf("2222222222\n");
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else {
@@ -565,7 +561,6 @@ struct continuation_exec_func<Parent, Result, Func, false, true>: private func_b
     {}
     void operator()(detail::task_ptr t)
     {
-        printf("33333333333\n");
         unwrapped_finish<Result, continuation_exec_func>(t,
                                                          detail::invoke_fake_void(std::move(this->get_func()),
                                                                                   std::move(parent)));
@@ -581,7 +576,6 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
     {}
     void operator()(detail::task_ptr t)
     {
-        printf("44444444444444\n");
         if (get_internal_task(parent)->state.load(std::memory_order_relaxed) == task_state::canceled)
             t->cancel(t, std::exception_ptr(get_internal_task(parent)->get_exception()));
         else
