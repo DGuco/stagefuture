@@ -25,8 +25,6 @@
 #include <zconf.h>
 
 using namespace stagefuture;
-
-using namespace stagefuture;
 int main(int argc, char *argv[])
 {
     //testSort();
@@ -149,5 +147,4 @@ int main(int argc, char *argv[])
         return x + y;
     });
     std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
-    usleep(10000);
 }

@@ -7,43 +7,103 @@ stagefuture
 using namespace stagefuture;
 int main(int argc, char *argv[])
 {
+    //testSort();
     int test_a = 10;
     threadpool_scheduler scheduler(1);
+    single_thread_scheduler singleThreadScheduler;
     int a = 0;
-    stage_future<void> task1 = stagefuture::run_async(scheduler,
+    stage_future<void> task1 = stagefuture::run_async(singleThreadScheduler,
                                                       [test_a]() -> void
                                                       {
                                                           std::cout
-                                                              << "Task 1 executes asynchronously,test_a * test_a: "
-                                                              << test_a * test_a << std::endl;
+                                                              << "Create Task 1 executes asynchronously,test_a : "
+                                                              << test_a
+                                                              << std::endl;
                                                       });
 
-    stage_future<int> task2 = stagefuture::supply_async(scheduler,
+    std::string str = "100";
+    stage_future<int> task11 =
+        stagefuture::supply_async(scheduler,
+                                  [&singleThreadScheduler, &str]() -> stage_future<int>
+                                  {
+                                      std::string str1 = std::to_string(std::stoi(str) * 100);
+                                      std::cout
+                                          << "=======create task11========="
+                                          << str1
+                                          << std::endl;
+                                      stage_future<int>
+                                          res = stagefuture::supply_async(singleThreadScheduler, [str1]() -> int
+                                      {
+                                          std::cout
+                                              << "======== in create task11 "
+                                              << str1.data()
+                                              << "========"
+                                              << std::endl;
+                                          return std::stoi(str1);
+                                      });
+                                      std::cout
+                                          << "=======create task11 end ========="
+                                          << std::endl;
+                                      return res;
+                                  });
+
+    stage_future<std::string> ttt =
+        task11.thenApply([&scheduler](int value) -> stage_future<std::string>
+                         {
+                             value *= 100;
+                             auto res = stagefuture::supply_async(scheduler, [value]() -> std::string
+                             {
+                                 std::cout
+                                     << "=======create ttt========="
+                                     << "value: "
+                                     << value
+                                     << std::endl;
+                                 return std::to_string(value);
+                             });
+                             value *= 100;
+                             return res;
+                         });
+
+    std::cout
+        << "****************************************************" << std::endl;
+    ttt.thenAccept([](std::string value) -> void
+                   {
+                       std::cout
+                           << "Task ttt executes in parallel with stage_future 1"
+                           << value
+                           << std::endl;
+                   });
+
+    stage_future<int> task2 = stagefuture::supply_async(singleThreadScheduler,
                                                         []() -> int
                                                         {
                                                             std::cout
                                                                 << "Task 2 executes in parallel with stage_future 1"
+                                                                << " thread id " << std::this_thread::get_id()
                                                                 << std::endl;
                                                             return 42;
                                                         });
 
-    stage_future<int> task3 = task2.thenApplyAsync(scheduler,
-                                                   [](int value) -> int
-                                                   {
-                                                       std::cout
-                                                           << "Task 3 executes after stage_future 2, which returned "
-                                                           << value << std::endl;
-                                                       return value * 3;
-                                                   });
-    auto task4 = stagefuture::when_all(task1, task3);
-    auto
-        task5 = task4.then([](std::tuple<stagefuture::stage_future<void>,
-                                                   stagefuture::stage_future<int>>
-                                        results)
-                                     {
-                                         std::cout << "Task 5 executes after tasks 1 and 3. Task 3 returned "
-                                                   << std::get<1>(results).get() << std::endl;
-                                     });
+    stage_future<int> task3 = task2.thenApply([](int value) -> int
+                                              {
+                                                  std::cout
+                                                      << "Task 3 executes after stage_future 2, which returned "
+                                                      << value
+                                                      << " thread id " << std::this_thread::get_id()
+                                                      << std::endl;
+                                                  return value * 3;
+                                              });
+    stage_future<std::tuple<stagefuture::stage_future<void>,
+                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
+    stage_future<void> task5 = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
+                                                              stagefuture::stage_future<int>> results)
+                                                {
+                                                    std::cout
+                                                        << "Task 5 executes after tasks 1 and 3. Task 3 returned "
+                                                        << std::get<1>(results).get()
+                                                        << " thread id " << std::this_thread::get_id()
+                                                        << std::endl;
+                                                });
 
     task5.get();
     std::cout << "Task 5 has completed" << std::endl;
