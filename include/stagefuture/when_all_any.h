@@ -242,7 +242,7 @@ when_any(Iter begin, Iter end)
     for (std::size_t i = 0; begin != end; i++, ++begin) {
         // Add a copy of the task to the results because the event may be
         // set before all tasks have finished.
-        detail::task_ptr *t = detail::get_internal_task(*begin);
+        detail::task_ptr t = detail::get_internal_task(*begin);
         detail::set_internal_task(state->result[i], detail::task_ptr(t));
 
         LIBASYNC_TRY {
