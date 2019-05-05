@@ -140,9 +140,9 @@ void when_all_variadic(when_all_state<Result> *state, First &&first, T &&... tas
 
     // Add a continuation to the task
     LIBASYNC_TRY {
-        first.then(inline_scheduler(),
-                   detail::when_all_func_tuple<index, task_type, Result>(detail::ref_count_ptr<detail::when_all_state<
-                       Result>>(state)));
+        first.thenAccept(detail::when_all_func_tuple<index,
+                                                     task_type,
+                                                     Result>(detail::ref_count_ptr<detail::when_all_state<Result>>(state)));
     } LIBASYNC_CATCH(...) {
         // Make sure we don't leak memory if then() throws
         state->remove_ref(sizeof...(T));

@@ -295,19 +295,6 @@ public:
                                              ->get_result(*this));
     }
 
-    // Add a continuation to the task
-    template<typename Sched, typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type then(Sched &sched, Func &&f)
-    {
-        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
-    }
-
-    template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
-    {
-        return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
-    }
-
     template<typename Func>
     typename detail::continuation_traits<stage_future, Func>::future_type thenApply(Func &&f)
     {
