@@ -84,7 +84,7 @@ void test()
     }
 };
 
-#define _OFFSET_(_Obj_Ty,_Key)                                                    \
+#define _OFFSET_(_Obj_Ty, _Key)                                                    \
     ((unsigned long)(&((_Obj_Ty *)0)->_Key))
 
 #define CLASS_REGISTER(_Obj_Ty)                                                    \
@@ -95,7 +95,7 @@ public:                                                                         
         return &__class_##_Obj_Key##__;                                            \
     }
 
-#define FIELD_REGISTER(_Access,_Field_Ty,_Field_Key,_Obj_Ty)                    \
+#define FIELD_REGISTER(_Access, _Field_Ty, _Field_Key, _Obj_Ty)                    \
 _Access:                                                                        \
     _Field_Ty _Field_Key;                                                        \
 private:                                                                        \
@@ -117,7 +117,9 @@ private:
     unsigned long _offset;
     std::string _key;
 public:
-    tat_field(unsigned long offset, std::string key) :_offset(offset), _key(key) {}
+    tat_field(unsigned long offset, std::string key)
+        : _offset(offset), _key(key)
+    {}
     tat_field(const tat_field &field)
     {
         this->_offset = field._offset;
@@ -127,12 +129,12 @@ public:
     template<typename _Obj_Ty, typename _Value_Ty>
     void get(_Obj_Ty *obj, _Value_Ty &value)
     {
-        value = *((_Value_Ty *)((unsigned char *)obj + _offset));
+        value = *((_Value_Ty *) ((unsigned char *) obj + _offset));
     }
     template<typename _Obj_Ty, typename _Value_Ty>
     void set(_Obj_Ty *obj, const _Value_Ty &value)
     {
-        *((_Value_Ty *)((unsigned char *)obj + _offset)) = value;
+        *((_Value_Ty *) ((unsigned char *) obj + _offset)) = value;
     }
     std::string get_key() const
     {
@@ -192,8 +194,7 @@ void testReflection()
     std::map<std::string, tat_field> field_map = test_class->get_fields();
 
 
-    for (auto& var : field_map)
-    {
+    for (auto &var : field_map) {
         std::cout << var.first << std::endl;
     }
 
@@ -204,14 +205,10 @@ void testReflection()
     test_vec_field.set(&inst, vec);
     std::cout << inst._vec_f[0] << std::endl;
 }
+
 int main()
 {
-    int a_ = 0;
-    B bbb = [&a_]() -> B
-    {
-        printf("Call func a_ = %d\n", a_);
-    }();
-    printf("bbb value = %d \n", bbb.value());
+    test();
     testReflection();
     return 0;
 }
