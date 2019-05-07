@@ -71,20 +71,18 @@ int main(int argc, char *argv[])
                      << "=======create task11========="
                      << str1
                      << std::endl;
-                 stage_future<int>
-                     res =
-                     stagefuture::supply_async<int>(
-                         singleThreadScheduler,
-                         [str1]() -> int
-                         {
-                             std::cout
-                                 << "======== in create task11 "
-                                 << str1.data()
-                                 << "========"
-                                 << std::endl;
-                             return std::stoi(
-                                 str1);
-                         });
+                 stage_future<int> res = stagefuture::supply_async<int>(
+                     singleThreadScheduler,
+                     [str1]() -> int
+                     {
+                         std::cout
+                             << "======== in create task11 "
+                             << str1.data()
+                             << "========"
+                             << std::endl;
+                         return std::stoi(
+                             str1);
+                     });
                  std::cout
                      << "=======create task11 end ========="
                      << std::endl;
