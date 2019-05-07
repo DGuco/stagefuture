@@ -587,5 +587,17 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
     Parent parent;
 };
 
+template<typename Res, typename Par, bool ParVoid>
+struct stage_future_func_type
+{
+    typedef std::function<Res(Par)> type;
+};
+
+template<typename Res, typename Par>
+struct stage_future_func_type<Res, Par, true>
+{
+    typedef std::function<Res()> type;
+};
+
 } // namespace detail
 } // namespace stagefuture

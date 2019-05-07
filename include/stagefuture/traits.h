@@ -178,17 +178,5 @@ struct continuation_traits
     typedef stage_future<typename remove_task<result_type>::type> future_type;
 };
 
-template<typename Res, typename Par, bool ParVoid>
-struct stage_future_func_type
-{
-    typedef std::function<Res(Par)> type;
-};
-
-template<typename Res, typename Par>
-struct stage_future_func_type<Res, Par, true>
-{
-    typedef std::function<Res()> type;
-};
-
 } // namespace detail
 } // namespace stagefuture
