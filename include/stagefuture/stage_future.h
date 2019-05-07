@@ -295,70 +295,81 @@ public:
                                              ->get_result(*this));
     }
 
-    template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type thenApply(Func &&f)
+    // Add a continuation to the task
+    template<typename Sched, typename Func>
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Sched &sched, Func &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
+        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+    }
+    template<typename Func>
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
+    {
+        return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
+    }
+
+    template<typename Res>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenApply(typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
+    {
         detail::scheduler *pScheduler = get_internal_task(*this)->sched;
         //如果父亲任务的sched为null则
         if (pScheduler == nullptr) {
             pScheduler = &inline_scheduler();
         }
-        return this->then_internal(*pScheduler, std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(*pScheduler, std::forward<func_type>(f), std::move(*this));
     }
 
     // Add a continuation to the task
-    template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type
-    thenApplyAsync(detail::scheduler &sched, Func &&f)
+    template<typename Res>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenApplyAsync(detail::scheduler &sched,
+                   typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
-        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(sched, std::forward<func_type>(f), std::move(*this));
     }
 
-    template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type thenApplyAsync(Func &&f)
+    template<typename Res>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenApplyAsync(typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
-        return this->then_internal(::stagefuture::default_scheduler(), std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(::stagefuture::default_scheduler(),
+                                   std::forward<func_type>(f),
+                                   std::move(*this));
     }
 
-    template<typename Func>
-    stage_future<void> thenAccept(Func &&f)
+    stage_future<void>
+    thenAccept(typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
         detail::scheduler *pScheduler = get_internal_task(*this)->sched;
         //如果父亲任务的sched为null则
         if (pScheduler == nullptr) {
             pScheduler = &inline_scheduler();
         }
-        return this->then_internal(*pScheduler, std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(*pScheduler, std::forward<func_type>(f), std::move(*this));
     }
 
-    template<typename Func>
-    stage_future<void> thenAcceptAsync(detail::scheduler &sched, Func &&f)
+    stage_future<void>
+    thenAcceptAsync(detail::scheduler &sched, typename detail::stage_future_func_type<void,
+                                                                                      Result,
+                                                                                      std::is_void<Result>::value>::type &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
-        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(sched, std::forward<func_type>(f), std::move(*this));
     }
 
-    template<typename Func>
-    stage_future<void> thenAcceptAsync(Func &&f)
+    stage_future<void>
+    thenAcceptAsync(typename detail::stage_future_func_type<void,
+                                                            Result,
+                                                            std::is_void<Result>::value>::type &&f)
     {
-        typedef typename detail::continuation_traits<stage_future, Func>::result_type return_type;
-        //the type of the function's return value must not be void
-        static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
-        return this->then_internal(::stagefuture::default_scheduler(), std::forward<Func>(f), std::move(*this));
+        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(::stagefuture::default_scheduler(),
+                                   std::forward<func_type>(f),
+                                   std::move(*this));
     }
 
     // Create a shared_stage_future from this task
@@ -576,19 +587,17 @@ public:
 
 /////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
 // supply_async a function asynchronously return not void value with the parameter sched
-template<typename Func>
-stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-supply_async(detail::scheduler &sched, Func &&f);
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+inline supply_async(detail::scheduler &sched, std::function<Res()> &&f);
 // supply_async a function asynchronously return not void value with default sched
-template<typename Func>
-decltype(supply_async(::stagefuture::default_scheduler(), std::declval<Func>()))
-supply_async(Func &&f);
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+inline supply_async(std::function<Res()> &&f);
 // run_async a function asynchronously return void value with the parameter sched
-template<typename Func>
-stage_future<void> run_async(detail::scheduler &sched, Func &&f);
+inline stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f);
 // run_async a function asynchronously return void value with default sched
-template<typename Func>
-stage_future<void> run_async(Func &&f);
+inline stage_future<void> run_async(std::function<void()> &&f);
 // Create a completed task containing a value
 template<typename T>
 stage_future<typename std::decay<T>::type> make_future(T &&value);
@@ -629,45 +638,28 @@ shedule_task(detail::scheduler &sched, Func &&f)
 }
 
 // supply_async a function asynchronously return not void value with the parameter sched
-template<typename Func>
-stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>
-supply_async(detail::scheduler &sched, Func &&f)
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+supply_async(detail::scheduler &sched, std::function<Res()> &&f)
 {
-    typedef
-    typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
-    static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
-    return shedule_task(sched, std::forward<Func>(f));
+    return shedule_task(sched, std::forward<std::function<Res()> >(f));
 }
 
-template<typename Func>
-decltype(supply_async(::stagefuture::default_scheduler(), std::declval<Func>()))
-supply_async(Func &&f)
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+supply_async(std::function<Res()> &&f)
 {
-    //the type of the function's return value must not be void
-    typedef
-    typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
-    static_assert(!std::is_void<return_type>::value, "The type of the func's result is must not be void");
-    return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
+    return shedule_task(::stagefuture::default_scheduler(), std::forward<std::function<Res()> >(f));
 }
 
-template<typename Func>
-stage_future<void> run_async(detail::scheduler &sched, Func &&f)
+stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f)
 {
-    typedef
-    typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
-    //the type of the function's return value must be void
-    static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
-    return shedule_task(sched, std::forward<Func>(f));
+    return shedule_task(sched, std::forward<std::function<void()>>(f));
 }
 
-template<typename Func>
-stage_future<void> run_async(Func &&f)
+stage_future<void> run_async(std::function<void()> &&f)
 {
-    //the type of the function's return value must be void
-    typedef
-    typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type return_type;
-    static_assert(std::is_void<return_type>::value, "The type of the func's result is must be void");
-    return shedule_task(::stagefuture::default_scheduler(), std::forward<Func>(f));
+    return shedule_task(::stagefuture::default_scheduler(), std::forward<std::function<void()>>(f));
 }
 
 // Create a completed task containing a value

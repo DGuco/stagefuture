@@ -36,7 +36,7 @@
 #include <thread>
 #include <type_traits>
 #include <utility>
-#include <vector>
+#include <vector>ss
 
 // Export declaration to make symbols visible for dll/so
 #ifdef LIBASYNC_STATIC

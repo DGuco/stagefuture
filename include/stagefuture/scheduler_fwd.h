@@ -33,8 +33,6 @@ class threadpool_scheduler;
 // void schedule(stagefuture::task_run_handle t);
 // This function should result in t.run() being called at some stage_future point.
 
-#include <memory>
-
 namespace detail
 {
 

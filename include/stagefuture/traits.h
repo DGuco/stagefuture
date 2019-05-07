@@ -46,6 +46,7 @@ T fake_void_to_void(T &&x)
 {
     return std::forward<T>(x);
 }
+
 inline void fake_void_to_void(fake_void)
 {}
 
@@ -175,6 +176,18 @@ struct continuation_traits
     typedef decltype(detail::fake_void_to_void(detail::invoke_fake_void(std::declval<decay_func>(),
                                                                         std::declval<param_type>()))) result_type;
     typedef stage_future<typename remove_task<result_type>::type> future_type;
+};
+
+template<typename Res, typename Par, bool ParVoid>
+struct stage_future_func_type
+{
+    typedef std::function<Res(Par)> type;
+};
+
+template<typename Res, typename Par>
+struct stage_future_func_type<Res, Par, true>
+{
+    typedef std::function<Res()> type;
 };
 
 } // namespace detail

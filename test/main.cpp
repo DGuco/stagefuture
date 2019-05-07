@@ -210,5 +210,10 @@ int main()
 {
     test();
     testReflection();
+    std::function<void(void)> func = []() -> void
+    {
+        printf("hello word!\n");
+    };
+    func();
     return 0;
 }

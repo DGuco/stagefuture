@@ -473,7 +473,7 @@ void unwrapped_finish(detail::task_ptr parent_base, Child child_task)
 
     // Set up a continuation on the child to set the result of the parent
     LIBASYNC_TRY {
-        child_task.thenAcceptAsync(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
+        child_task.then(*(pParentFunc->sched), unwrapped_func<Result, Child>(task_ptr(parent_base)));
     } LIBASYNC_CATCH(...) {
         // Use cancel_base here because the function object is already destroyed.
         std::static_pointer_cast<task_result<Result> >(parent_base)->cancel_base(std::current_exception());
