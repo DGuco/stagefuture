@@ -71,6 +71,7 @@ public:
         get_internal_task()->wait_and_throw();
     }
 
+private:
     // Common code for then()
     template<typename Func, typename Parent>
     typename continuation_traits<Parent, Func>::future_type
@@ -268,9 +269,43 @@ public:
 
 } // namespace detail
 
+/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
+// supply_async a function asynchronously return not void value with the parameter sched
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+inline supply_async(detail::scheduler &sched, std::function<Res()> &&f);
+// supply_async a function asynchronously return not void value with default sched
+template<typename Res>
+stage_future<typename detail::remove_task<Res>::type>
+inline supply_async(std::function<Res()> &&f);
+// run_async a function asynchronously return void value with the parameter sched
+inline stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f);
+// run_async a function asynchronously return void value with default sched
+inline stage_future<void> run_async(std::function<void()> &&f);
+// Create a completed task containing a value
+template<typename T>
+stage_future<typename std::decay<T>::type> make_future(T &&value);
+template<typename T>
+stage_future<T &> make_task(std::reference_wrapper<T> value);
+inline stage_future<void> make_task();
+// Create a canceled task containing an exception
+template<typename T>
+stage_future<T> make_exception_task(std::exception_ptr except);
+/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
+
 template<typename Result>
 class stage_future: public detail::basic_future<Result>
 {
+private:
+    detail::scheduler &getMyScheduler() const
+    {
+        detail::scheduler *pScheduler = get_internal_task(*this)->sched;
+        //如果父亲任务的sched为null则
+        if (pScheduler == nullptr) {
+            pScheduler = &inline_scheduler();
+        }
+        return *pScheduler;
+    }
 public:
     // Movable but not copyable
     stage_future() = default;
@@ -297,80 +332,119 @@ public:
 
     // Add a continuation to the task
     template<typename Sched, typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type then(Sched &sched, Func &&f)
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Sched &sched, Func &&func)
     {
-        return this->then_internal(sched, std::forward<Func>(f), std::move(*this));
+        return this->then_internal(sched, std::forward<Func>(func), std::move(*this));
     }
     template<typename Func>
-    typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&f)
+    typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&func)
     {
-        return then(::stagefuture::default_scheduler(), std::forward<Func>(f));
+        return then(::stagefuture::default_scheduler(), std::forward<Func>(func));
     }
 
     template<typename Res>
     stage_future<typename detail::remove_task<Res>::type>
-    thenApply(typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
+    thenApply(typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type &&func)
     {
-        detail::scheduler *pScheduler = get_internal_task(*this)->sched;
-        //如果父亲任务的sched为null则
-        if (pScheduler == nullptr) {
-            pScheduler = &inline_scheduler();
-        }
-        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(*pScheduler, std::forward<func_type>(f), std::move(*this));
+        typedef typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(getMyScheduler(), std::forward<func_type>(func), std::move(*this));
     }
 
     // Add a continuation to the task
     template<typename Res>
     stage_future<typename detail::remove_task<Res>::type>
-    thenApplyAsync(detail::scheduler &sched,
-                   typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
+    thenApplyAsync(typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type &&func,
+                   detail::scheduler &sched = default_scheduler())
     {
-        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(sched, std::forward<func_type>(f), std::move(*this));
+        typedef typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(sched, std::forward<func_type>(func), std::move(*this));
+    }
+
+    stage_future<void>
+    thenAccept(typename detail::future_func_type<void, Result, std::is_void<Result>::value>::type &&func)
+    {
+        typedef typename detail::future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(getMyScheduler(), std::forward<func_type>(func), std::move(*this));
+    }
+
+    stage_future<void>
+    thenAcceptAsync(typename detail::future_func_type<void, Result, std::is_void<Result>::value>::type &&func,
+                    detail::scheduler &sched = default_scheduler())
+    {
+        typedef typename detail::future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
+        return this->then_internal(sched, std::forward<func_type>(func), std::move(*this));
     }
 
     template<typename Res>
     stage_future<typename detail::remove_task<Res>::type>
-    thenApplyAsync(typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type &&f)
+    thenCompose(typename detail::future_func_type<stage_future<typename detail::remove_task<Res>::type>,
+                                                  Result,
+                                                  std::is_void<Result>::value>::type &&func)
     {
-        typedef typename detail::stage_future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(::stagefuture::default_scheduler(),
-                                   std::forward<func_type>(f),
-                                   std::move(*this));
+        auto compose_func = detail::future_func_type<stage_future<typename detail::remove_task<Res>::type>,
+                                                     Result,
+                                                     std::is_void<Result>::value>::composeCall(std::move(func));
+
+        return this->thenApply<stage_future<Res>>(std::move(compose_func));
     }
 
-    stage_future<void>
-    thenAccept(typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type &&f)
+
+    template<typename Res>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenComposeAsync(typename detail::future_func_type<stage_future<typename detail::remove_task<Res>::type>,
+                                                       Result,
+                                                       std::is_void<Result>::value>::type &&func,
+                     detail::scheduler &sched = default_scheduler())
     {
-        detail::scheduler *pScheduler = get_internal_task(*this)->sched;
-        //如果父亲任务的sched为null则
-        if (pScheduler == nullptr) {
-            pScheduler = &inline_scheduler();
-        }
-        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(*pScheduler, std::forward<func_type>(f), std::move(*this));
+        auto compose_func = detail::future_func_type<stage_future<typename detail::remove_task<Res>::type>,
+                                                     Result,
+                                                     std::is_void<Result>::value>::composeCall(std::move(func));
+
+        return this->thenApplyAsync<stage_future<Res>>(compose_func, sched);
     }
 
-    stage_future<void>
-    thenAcceptAsync(detail::scheduler &sched, typename detail::stage_future_func_type<void,
-                                                                                      Result,
-                                                                                      std::is_void<Result>::value>::type &&f)
-    {
-        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(sched, std::forward<func_type>(f), std::move(*this));
-    }
-
-    stage_future<void>
-    thenAcceptAsync(typename detail::stage_future_func_type<void,
-                                                            Result,
-                                                            std::is_void<Result>::value>::type &&f)
-    {
-        typedef typename detail::stage_future_func_type<void, Result, std::is_void<Result>::value>::type func_type;
-        return this->then_internal(::stagefuture::default_scheduler(),
-                                   std::forward<func_type>(f),
-                                   std::move(*this));
-    }
+//    template<typename Res, typename OtherRes>
+//    stage_future<typename detail::remove_task<Res>::type>
+//    thenCombineAsync(const stage_future<typename detail::remove_task<OtherRes>::type> &otherFuture,
+//                     typename detail::future_2func_type<stage_future<typename detail::remove_task<Res>::type>,
+//                                                        Result,
+//                                                        OtherRes,
+//                                                        std::is_void<Result>::value,
+//                                                        std::is_void<OtherRes>::value>::type &&func,
+//                     detail::scheduler &sched = default_scheduler())
+//    {
+//        stage_future<std::tuple<stagefuture::stage_future<Result>,
+//                                stagefuture::stage_future<typename detail::remove_task<OtherRes>::type>>> finalTask
+//            = when_all(*this, otherFuture);
+//        return finalTask.thenApplyAsync([&func](std::tuple<stagefuture::stage_future<Result>,
+//                                                           stagefuture::stage_future<typename detail::remove_task<
+//                                                               OtherRes>::type>> results)
+//                                        {
+//                                            auto res0 = std::get<0>(results);
+//                                            auto res1 = std::get<1>(results);
+//                                            if (res0.canceled()) {
+//                                                return make_exception_task<typename detail::remove_task<Res>::type>(res0.get_exception());
+//                                            }
+//                                            if (res1.canceled()) {
+//                                                return make_exception_task<typename detail::remove_task<Res>::type>(res1.get_exception());
+//                                            }
+//                                            Result result = res0.get();
+//                                            OtherRes otherRes = res1.get();
+//                                            return func(result, otherRes);
+//                                        }, sched);
+//    }
+//
+//    template<typename Res, typename OtherRes>
+//    stage_future<typename detail::remove_task<Res>::type>
+//    thenCombine(const stage_future<typename detail::remove_task<OtherRes>::type> &otherFuture,
+//                typename detail::future_2func_type<stage_future<typename detail::remove_task<Res>::type>,
+//                                                   Result,
+//                                                   OtherRes,
+//                                                   std::is_void<Result>::value,
+//                                                   std::is_void<OtherRes>::value>::type &&func)
+//    {
+//        thenCombineAsync(otherFuture, func, getMyScheduler());
+//    }
 
     // Create a shared_stage_future from this task
     shared_stage_future<Result> share()
@@ -584,31 +658,6 @@ public:
             return std::exception_ptr();
     }
 };
-
-/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
-// supply_async a function asynchronously return not void value with the parameter sched
-template<typename Res>
-stage_future<typename detail::remove_task<Res>::type>
-inline supply_async(detail::scheduler &sched, std::function<Res()> &&f);
-// supply_async a function asynchronously return not void value with default sched
-template<typename Res>
-stage_future<typename detail::remove_task<Res>::type>
-inline supply_async(std::function<Res()> &&f);
-// run_async a function asynchronously return void value with the parameter sched
-inline stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f);
-// run_async a function asynchronously return void value with default sched
-inline stage_future<void> run_async(std::function<void()> &&f);
-// Create a completed task containing a value
-template<typename T>
-stage_future<typename std::decay<T>::type> make_future(T &&value);
-template<typename T>
-stage_future<T &> make_task(std::reference_wrapper<T> value);
-inline stage_future<void> make_task();
-// Create a canceled task containing an exception
-template<typename T>
-stage_future<T> make_exception_task(std::exception_ptr except);
-/////////////////////////////////////////////////////the global function////////////////////////////////////////////////////////////////
-
 
 template<typename Func>
 stage_future<typename detail::remove_task<typename std::result_of<typename std::decay<Func>::type()>::type>::type>

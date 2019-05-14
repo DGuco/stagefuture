@@ -588,15 +588,55 @@ struct continuation_exec_func<Parent, Result, Func, true, true>: private func_ba
 };
 
 template<typename Res, typename Par, bool ParVoid>
-struct stage_future_func_type
+struct future_func_type
 {
     typedef std::function<Res(Par)> type;
+public:
+    static std::function<Res(Par)> composeCall(type &&func)
+    {
+        return  [&func](Par par) -> Res
+        {
+            return std::move(func(par));
+        };
+    }
 };
 
 template<typename Res, typename Par>
-struct stage_future_func_type<Res, Par, true>
+struct future_func_type<Res, Par, true>
 {
     typedef std::function<Res()> type;
+public:
+    static std::function<Res()> composeCall(type &&func)
+    {
+        return [&func]() -> Res
+        {
+            return std::move(func());
+        };
+    }
+};
+
+template<typename Res, typename Par1, typename Par2, bool Par1Void, bool Par2Void>
+struct future_2func_type
+{
+    typedef std::function<Res(Par1, Par2)> type;
+};
+
+template<typename Res, typename Par1, typename Par2>
+struct future_2func_type<Res, Par1, Par2, true, true>
+{
+    typedef std::function<Res()> type;
+};
+
+template<typename Res, typename Par1, typename Par2>
+struct future_2func_type<Res, Par1, Par2, true, false>
+{
+    typedef std::function<Res(Par2)> type;
+};
+
+template<typename Res, typename Par1, typename Par2>
+struct future_2func_type<Res, Par1, Par2, false, true>
+{
+    typedef std::function<Res(Par1)> type;
 };
 
 } // namespace detail
