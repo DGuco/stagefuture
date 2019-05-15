@@ -137,7 +137,7 @@ public:
     {
         LIBASYNC_ASSERT(internal_task, std::invalid_argument, "Use of empty task object");
         if (internal_task->wait() == task_state::canceled)
-            return get_internal_task(*this)->get_exception();
+            return get_internal_task()->get_exception();
         else
             return std::exception_ptr();
     }
@@ -273,15 +273,10 @@ public:
 // supply_async a function asynchronously return not void value with the parameter sched
 template<typename Res>
 stage_future<typename detail::remove_task<Res>::type>
-inline supply_async(detail::scheduler &sched, std::function<Res()> &&f);
-// supply_async a function asynchronously return not void value with default sched
-template<typename Res>
-stage_future<typename detail::remove_task<Res>::type>
-inline supply_async(std::function<Res()> &&f);
-// run_async a function asynchronously return void value with the parameter sched
-inline stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f);
+inline supply_async(std::function<Res()> &&f, detail::scheduler &sched = ::stagefuture::default_scheduler());
 // run_async a function asynchronously return void value with default sched
-inline stage_future<void> run_async(std::function<void()> &&f);
+inline stage_future<void>
+run_async(std::function<void()> &&f, detail::scheduler &sched = ::stagefuture::default_scheduler());
 // Create a completed task containing a value
 template<typename T>
 stage_future<typename std::decay<T>::type> make_future(T &&value);
@@ -309,6 +304,7 @@ private:
 public:
     // Movable but not copyable
     stage_future() = default;
+    stage_future(const stage_future &other) = delete;
     stage_future(stage_future &&other) LIBASYNC_NOEXCEPT
         : detail::basic_future<Result>(std::move(other))
     {}
@@ -336,6 +332,7 @@ public:
     {
         return this->then_internal(sched, std::forward<Func>(func), std::move(*this));
     }
+
     template<typename Func>
     typename detail::continuation_traits<stage_future, Func>::future_type then(Func &&func)
     {
@@ -346,6 +343,7 @@ public:
     stage_future<typename detail::remove_task<Res>::type>
     thenApply(typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type &&func)
     {
+        static_assert(!std::is_void<Res>::value, "The type of the func's result is must not be void");
         typedef typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
         return this->then_internal(getMyScheduler(), std::forward<func_type>(func), std::move(*this));
     }
@@ -356,6 +354,7 @@ public:
     thenApplyAsync(typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type &&func,
                    detail::scheduler &sched = default_scheduler())
     {
+        static_assert(!std::is_void<Res>::value, "The type of the func's result is must not be void");
         typedef typename detail::future_func_type<Res, Result, std::is_void<Result>::value>::type func_type;
         return this->then_internal(sched, std::forward<func_type>(func), std::move(*this));
     }
@@ -388,7 +387,6 @@ public:
         return this->thenApply<stage_future<Res>>(std::move(compose_func));
     }
 
-
     template<typename Res>
     stage_future<typename detail::remove_task<Res>::type>
     thenComposeAsync(typename detail::future_func_type<stage_future<typename detail::remove_task<Res>::type>,
@@ -400,51 +398,49 @@ public:
                                                      Result,
                                                      std::is_void<Result>::value>::composeCall(std::move(func));
 
-        return this->thenApplyAsync<stage_future<Res>>(compose_func, sched);
+        return this->thenApplyAsync<stage_future<Res>>(std::move(compose_func), sched);
     }
 
-//    template<typename Res, typename OtherRes>
-//    stage_future<typename detail::remove_task<Res>::type>
-//    thenCombineAsync(const stage_future<typename detail::remove_task<OtherRes>::type> &otherFuture,
-//                     typename detail::future_2func_type<stage_future<typename detail::remove_task<Res>::type>,
-//                                                        Result,
-//                                                        OtherRes,
-//                                                        std::is_void<Result>::value,
-//                                                        std::is_void<OtherRes>::value>::type &&func,
-//                     detail::scheduler &sched = default_scheduler())
-//    {
-//        stage_future<std::tuple<stagefuture::stage_future<Result>,
-//                                stagefuture::stage_future<typename detail::remove_task<OtherRes>::type>>> finalTask
-//            = when_all(*this, otherFuture);
-//        return finalTask.thenApplyAsync([&func](std::tuple<stagefuture::stage_future<Result>,
-//                                                           stagefuture::stage_future<typename detail::remove_task<
-//                                                               OtherRes>::type>> results)
-//                                        {
-//                                            auto res0 = std::get<0>(results);
-//                                            auto res1 = std::get<1>(results);
-//                                            if (res0.canceled()) {
-//                                                return make_exception_task<typename detail::remove_task<Res>::type>(res0.get_exception());
-//                                            }
-//                                            if (res1.canceled()) {
-//                                                return make_exception_task<typename detail::remove_task<Res>::type>(res1.get_exception());
-//                                            }
-//                                            Result result = res0.get();
-//                                            OtherRes otherRes = res1.get();
-//                                            return func(result, otherRes);
-//                                        }, sched);
-//    }
-//
-//    template<typename Res, typename OtherRes>
-//    stage_future<typename detail::remove_task<Res>::type>
-//    thenCombine(const stage_future<typename detail::remove_task<OtherRes>::type> &otherFuture,
-//                typename detail::future_2func_type<stage_future<typename detail::remove_task<Res>::type>,
-//                                                   Result,
-//                                                   OtherRes,
-//                                                   std::is_void<Result>::value,
-//                                                   std::is_void<OtherRes>::value>::type &&func)
-//    {
-//        thenCombineAsync(otherFuture, func, getMyScheduler());
-//    }
+    template<typename Res, typename OtherRes>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenCombine(stage_future<OtherRes> &&otherFuture,
+                typename detail::future_2func_type<Res,
+                                                   Result,
+                                                   OtherRes,
+                                                   std::is_void<Result>::value,
+                                                   std::is_void<OtherRes>::value>::type &&func)
+    {
+        stage_future<std::tuple<stagefuture::stage_future<Result>,
+                                stagefuture::stage_future<typename detail::remove_task<OtherRes>::type>>> finalTask
+            = when_all(*this, otherFuture);
+        auto &&combine_func = detail::future_2func_type<Res,
+                                                        Result,
+                                                        OtherRes,
+                                                        std::is_void<Result>::value,
+                                                        std::is_void<OtherRes>::value>::combineCall(std::move(func));
+        finalTask.template thenApply<Res>(std::move(combine_func));
+    }
+
+    template<typename Res, typename ParRes>
+    stage_future<typename detail::remove_task<Res>::type>
+    thenCombineAsync(stage_future<ParRes> &&otherFuture,
+                     typename detail::future_2func_type<Res,
+                                                        Result,
+                                                        ParRes,
+                                                        std::is_void<Result>::value,
+                                                        std::is_void<ParRes>::value>::type &&func,
+                     detail::scheduler &sched = default_scheduler())
+    {
+        stage_future<std::tuple<stagefuture::stage_future<Result>,
+                                stagefuture::stage_future<typename detail::remove_task<ParRes>::type>>> finalTask
+            = when_all(*this, otherFuture);
+        auto combine_func = detail::future_2func_type<Res,
+                                                      Result,
+                                                      ParRes,
+                                                      std::is_void<Result>::value,
+                                                      std::is_void<ParRes>::value>::combineCall(std::move(func));
+        return finalTask.template thenApplyAsync<Res>(std::move(combine_func), sched);
+    }
 
     // Create a shared_stage_future from this task
     shared_stage_future<Result> share()
@@ -686,29 +682,17 @@ shedule_task(detail::scheduler &sched, Func &&f)
     return out;
 }
 
-// supply_async a function asynchronously return not void value with the parameter sched
 template<typename Res>
 stage_future<typename detail::remove_task<Res>::type>
-supply_async(detail::scheduler &sched, std::function<Res()> &&f)
+supply_async(std::function<Res()> &&f, detail::scheduler &sched)
 {
+    static_assert(!std::is_void<Res>::value, "The type of the func's result is must not be void");
     return shedule_task(sched, std::forward<std::function<Res()> >(f));
 }
 
-template<typename Res>
-stage_future<typename detail::remove_task<Res>::type>
-supply_async(std::function<Res()> &&f)
-{
-    return shedule_task(::stagefuture::default_scheduler(), std::forward<std::function<Res()> >(f));
-}
-
-stage_future<void> run_async(detail::scheduler &sched, std::function<void()> &&f)
+stage_future<void> run_async(std::function<void()> &&f, detail::scheduler &sched)
 {
     return shedule_task(sched, std::forward<std::function<void()>>(f));
-}
-
-stage_future<void> run_async(std::function<void()> &&f)
-{
-    return shedule_task(::stagefuture::default_scheduler(), std::forward<std::function<void()>>(f));
 }
 
 // Create a completed task containing a value

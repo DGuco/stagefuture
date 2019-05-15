@@ -594,7 +594,7 @@ struct future_func_type
 public:
     static std::function<Res(Par)> composeCall(type &&func)
     {
-        return  [&func](Par par) -> Res
+        return [&func](Par par) -> Res
         {
             return std::move(func(par));
         };
@@ -615,28 +615,119 @@ public:
     }
 };
 
+// Create a canceled task containing an exception
+template<typename T>
+stage_future<T> combine_canceled(std::exception_ptr except)
+{
+    stage_future<T> out;
+
+    detail::set_internal_task(out,
+                              detail::task_ptr(new detail::task_result<typename detail::void_to_fake_void<T>::type>));
+    detail::get_internal_task(out)->set_exception(std::move(except));
+    detail::get_internal_task(out)->state.store(detail::task_state::canceled, std::memory_order_relaxed);
+
+    return out;
+}
+
 template<typename Res, typename Par1, typename Par2, bool Par1Void, bool Par2Void>
 struct future_2func_type
 {
     typedef std::function<Res(Par1, Par2)> type;
+public:
+    typedef std::tuple<stagefuture::stage_future<Par1>,
+                       stagefuture::stage_future<typename detail::remove_task<Par2>::type>> par_type;
+    static std::function<Res(par_type)> combineCall(type &&func)
+    {
+        return [&func](par_type results) -> Res
+        {
+            auto&& res0 = std::get<0>(results);
+            auto&& res1 = std::get<1>(results);
+            if (res0.canceled()) {
+                throw res0.get_exception();
+            }
+            if (res1.canceled()) {
+                throw res1.get_exception();
+            }
+            Par1 par1 = res0.get();
+            Par2 par2 = res1.get();
+            return func(par1, par2);
+        };
+    }
 };
 
 template<typename Res, typename Par1, typename Par2>
 struct future_2func_type<Res, Par1, Par2, true, true>
 {
     typedef std::function<Res()> type;
+
+public:
+    typedef std::tuple<stagefuture::stage_future<Par1>,
+                       stagefuture::stage_future<typename detail::remove_task<Par2>::type>> par_type;
+    static std::function<Res(par_type)> combineCall(type &&func)
+    {
+        return [&func](par_type results) -> Res
+        {
+            auto&& res0 = std::get<0>(results);
+            auto&& res1 = std::get<1>(results);
+            if (res0.canceled()) {
+                throw res0.get_exception();
+            }
+            if (res1.canceled()) {
+                throw res1.get_exception();
+            }
+            return func();
+        };
+    }
 };
 
 template<typename Res, typename Par1, typename Par2>
 struct future_2func_type<Res, Par1, Par2, true, false>
 {
     typedef std::function<Res(Par2)> type;
+public:
+    typedef std::tuple<stagefuture::stage_future<Par1>,
+                       stagefuture::stage_future<typename detail::remove_task<Par2>::type>> par_type;
+    static std::function<Res(par_type)> combineCall(type &&func)
+    {
+        return [&func](par_type results) -> Res
+        {
+            auto&& res0 = std::get<0>(results);
+            auto&& res1 = std::get<1>(results);
+            if (res0.canceled()) {
+                throw res0.get_exception();
+            }
+            if (res1.canceled()) {
+                throw res1.get_exception();
+            }
+            Par2 par2 = res1.get();
+            return func(par2);
+        };
+    }
 };
 
 template<typename Res, typename Par1, typename Par2>
 struct future_2func_type<Res, Par1, Par2, false, true>
 {
     typedef std::function<Res(Par1)> type;
+public:
+    typedef std::tuple<stagefuture::stage_future<Par1>,
+                       stagefuture::stage_future<typename detail::remove_task<Par2>::type>> par_type;
+    static std::function<Res(par_type)> combineCall(type &&func)
+    {
+        return [&func](par_type results) -> Res
+        {
+            auto&& res0 = std::get<0>(results);
+            auto&& res1 = std::get<1>(results);
+            if (res0.canceled()) {
+                throw res0.get_exception();
+            }
+            if (res1.canceled()) {
+                throw res1.get_exception();
+            }
+            Par1 par1 = res0.get();
+            return func(par1);
+        };
+    }
 };
 
 } // namespace detail

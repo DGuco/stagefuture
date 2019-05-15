@@ -25,134 +25,192 @@
 #include <zconf.h>
 
 using namespace stagefuture;
-int main(int argc, char *argv[])
+
+//线程池(为了输出的有序性和验证程序执行线程的正确性这里线程池线程数设为1)
+static threadpool_scheduler *g_scheduler = new threadpool_scheduler(1);
+
+//单线程
+static single_thread_scheduler *g_singleScheduler = new single_thread_scheduler;
+
+void testRunAsync()
 {
-    //testSort();
-    int test_a = 10;
-    threadpool_scheduler scheduler(1);
-    single_thread_scheduler singleThreadScheduler;
-    int a = 0;
-    stage_future<int> task1
-        = stagefuture::supply_async<int>(singleThreadScheduler,
-                                         [test_a]() -> int
-                                         {
-                                             std::cout
-                                                 << "Create Task 1 executes asynchronously,test_a : "
-                                                 << test_a
-                                                 << std::endl;
-                                             return 0;
-                                         });
-    task1.thenCompose<std::string>([&singleThreadScheduler](int value) -> stage_future<std::string>
-                                   {
-                                       auto future = stagefuture::supply_async<std::string>(singleThreadScheduler,
-                                                                                            [value]() -> std::string
-                                                                                            {
-                                                                                                std::cout
-                                                                                                    << "call thenCompose asynchronously "
-                                                                                                    << std::endl;
-                                                                                                return std::to_string(
-                                                                                                    value);
-                                                                                            });
-                                       printf("task then thenCompose value = %d \n", value);
-                                       return future;
-                                   });
-
-    std::string str = "100";
-    stage_future<int> task11 =
-        stagefuture::supply_async<stage_future<int>>
-            (scheduler,
-             [&singleThreadScheduler, &str]() -> stage_future<
-                 int>
-             {
-                 std::string str1 = std::to_string(
-                     std::stoi(str) * 100);
-                 std::cout
-                     << "=======create task11========="
-                     << str1
-                     << std::endl;
-                 stage_future<int> res = stagefuture::supply_async<int>(
-                     singleThreadScheduler,
-                     [str1]() -> int
-                     {
-                         std::cout
-                             << "======== in create task11 "
-                             << str1.data()
-                             << "========"
-                             << std::endl;
-                         return std::stoi(
-                             str1);
-                     });
-                 std::cout
-                     << "=======create task11 end ========="
-                     << std::endl;
-                 return res;
-             });
-
-    stage_future<std::string> ttt
-        = task11.thenApply<stage_future<std::string>>
-            ([&scheduler](int value) -> stage_future<std::string>
-             {
-                 value *= 100;
-                 auto res = stagefuture::supply_async<std::string>(scheduler,
-                                                                   [value]() -> std::string
-                                                                   {
-                                                                       std::cout
-                                                                           << "=======create ttt========="
-                                                                           << "value: "
-                                                                           << value
-                                                                           << std::endl;
-                                                                       return std::to_string(
-                                                                           value);
-                                                                   });
-                 value *= 100;
-                 return res;
-             });
-
-    std::cout
-        << "****************************************************" << std::endl;
-    ttt.thenAccept([](std::string value) -> void
-                   {
-                       std::cout
-                           << "Task ttt executes in parallel with stage_future 1"
-                           << value
-                           << std::endl;
-                   });
-
-    stage_future<int> task2
-        = stagefuture::supply_async<int>(singleThreadScheduler,
-                                         []() -> int
-                                         {
-                                             std::cout
-                                                 << "Task 2 executes in parallel with stage_future 1"
-                                                 << " thread id " << std::this_thread::get_id()
-                                                 << std::endl;
-                                             return 42;
-                                         });
-
-    stage_future<int> task3
-        = task2.thenApply<int>([](int value) -> int
+    printf("===============================testRunAsync====================================\n");
+    stage_future<void> void_future =
+        stagefuture::run_async([]()
                                {
-                                   std::cout
-                                       << "Task 3 executes after stage_future 2, which returned "
-                                       << value
-                                       << " thread id " << std::this_thread::get_id()
-                                       << std::endl;
-                                   return value * 3;
-                               });
-//    stage_future<std::tuple<stagefuture::stage_future<void>,
-//                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
-//    stage_future<void> task5
-//        = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
-//                                         stagefuture::stage_future<int>> results)
-//                           {
-//                               std::cout
-//                                   << "Task 5 executes after tasks 1 and 3. Task 3 returned "
-//                                   << std::get<1>(results).get()
-//                                   << " thread id " << std::this_thread::get_id()
-//                                   << std::endl;
-//                           });
+                                   printf("Create void future asynchronously,thread id %lld\n",
+                                          std::this_thread::get_id());
 
-//    task5.get();
+                               }, *g_scheduler);
+    // void_future.get(); will block in there 会阻塞在这里
+    usleep(100000);  //wait run over
+}
+
+void testSupplyAsync()
+{
+    printf("===============================testSupplyAsync====================================\n");
+    std::string str = "1000";
+    stage_future<int> no_void_future =
+        stagefuture::supply_async<int>([str]()
+                                       {
+                                           printf("Create no void future asynchronously,thread id %lld\n",
+                                                  std::this_thread::get_id());
+                                           return std::stoi(str);
+                                       }, *g_scheduler);
+    // no_void_future.get(); will block in there 会阻塞在这里
+    usleep(100000);  //wait run over
+}
+
+void testThenAccept()
+{
+    printf("===============================testThenAccept====================================\n");
+    stage_future<int> task1 =
+        stagefuture::supply_async<int>([]()
+                                       {
+                                           printf("Create task1 asynchronously,thread id %lld\n",
+                                                  std::this_thread::get_id());
+                                           return 100;
+                                       }, *g_scheduler);
+    stage_future<void> task2 =
+        task1.thenAccept([](int value)
+                         {
+                             printf("Consume task1 asynchronously,thread id %lld\n",
+                                    std::this_thread::get_id());
+                             printf("task 1 res %d\n", value);
+                         });
+
+    stage_future<void> task3 =
+        task2.thenAcceptAsync([]()
+                              {
+                                  printf("Consume task2 asynchronously,thread id %lld\n",
+                                         std::this_thread::get_id());
+                              }, *g_singleScheduler);
+    usleep(100000);  //wait run over
+}
+
+void testThenApply()
+{
+    printf("===============================testThenApply====================================\n");
+    stage_future<int> task1 =
+        stagefuture::supply_async<int>([]()
+                                       {
+                                           printf("Create task1 asynchronously,thread id %lld\n",
+                                                  std::this_thread::get_id());
+                                           return 100;
+                                       }, *g_scheduler);
+    stage_future<std::string> task2 =
+        task1.thenApply<std::string>([](int value)
+                                     {
+                                         printf("Apply task1 asynchronously,thread id %lld\n",
+                                                std::this_thread::get_id());
+                                         printf("task 1 res %d\n", value);
+                                         return std::to_string(value * value);
+                                     });
+    stage_future<void> task3 =
+        task2.thenAcceptAsync([](std::string value)
+                              {
+                                  printf("Apply task2 asynchronously,thread id %lld\n", std::this_thread::get_id());
+                                  printf("task 1 res %s\n", value.data());
+                              }, *g_singleScheduler);
+
+    task3.thenApplyAsync<int>([]()
+                              {
+                                  printf("Apply task3 asynchronously,thread id %lld\n", std::this_thread::get_id());
+                                  return 0;
+                              });
+    usleep(100000);  //wait run over
+}
+
+void testThenCompose()
+{
+    printf("===============================testThenCompose====================================\n");
+    stage_future<int> task1 =
+        stagefuture::supply_async<int>([]()
+                                       {
+                                           printf("Create task1 asynchronously,thread id %lld\n",
+                                                  std::this_thread::get_id());
+                                           return 100;
+                                       }, *g_scheduler);
+    stage_future<std::string> task2 = task1.thenComposeAsync<std::string>
+        ([](int value) -> stage_future<std::string>
+         {
+             printf("Compose task1 asynchronously,thread id %lld\n", std::this_thread::get_id());
+             //.. DO SOME THING
+             auto future =
+                 stagefuture::supply_async<std::string>([value]()
+                                                        {
+                                                            int res_value = value * value;
+                                                            return std::to_string(res_value);
+                                                        }, *g_singleScheduler);
+             return future;
+         });
+    usleep(100000);  //wait run over
+}
+
+void testThenCombine()
+{
+    printf("===============================testThenCombine====================================\n");
+    stage_future<float> task1 =
+        stagefuture::supply_async<float>([]()
+                                         {
+                                             printf("Create task1 asynchronously,thread id %lld\n",
+                                                    std::this_thread::get_id());
+                                             return 100.f;
+                                         }, *g_scheduler);
+    stage_future<std::string> task2 =
+        stagefuture::supply_async<std::string>([]()
+                                               {
+                                                   printf("Create task2 asynchronously,thread id %lld\n",
+                                                          std::this_thread::get_id());
+                                                   return "100";
+                                               });
+    stage_future<long> task3 =
+        task2.thenCombineAsync<long, float>(std::move(task1), [](std::string res1, float res2)
+        {
+            printf("Combine  task1 and task 2 asynchronously,thread id %lld\n", std::this_thread::get_id());
+            return std::stoi(res1) * res2 - 200;
+        });
+    task3.thenAccept([](long value)
+                     {
+                         printf("Consume task3 asynchronously,thread id %lld\n",
+                                std::this_thread::get_id());
+                         printf("task 3 res %ld\n", value);
+                     });
+    usleep(100000);  //wait run over
+}
+
+void testOther()
+{
+    printf("===============================testOter====================================\n");
+    stage_future<void> task1 =
+        stagefuture::run_async([]()
+                               {
+                                   printf("Create task1 asynchronously,thread id %lld\n",
+                                          std::this_thread::get_id());
+                               });
+
+    stage_future<int> task3 =
+        stagefuture::supply_async<int>([]()
+                                       {
+                                           printf("Create task3 asynchronously,thread id %lld\n",
+                                                  std::this_thread::get_id());
+                                           return 100;
+                                       }, *g_scheduler);
+
+    stage_future<std::tuple<stagefuture::stage_future<void>,
+                            stagefuture::stage_future<int>>> task4 = stagefuture::when_all(task1, task3);
+    stage_future<void> task5
+        = task4.thenAccept([](std::tuple<stagefuture::stage_future<void>,
+                                         stagefuture::stage_future<int>> results)
+                           {
+                               std::cout
+                                   << "Task 5 executes after tasks 1 and 3. Task 3 returned "
+                                   << std::get<1>(results).get()
+                                   << " thread id " << std::this_thread::get_id()
+                                   << std::endl;
+                           });
+
+    task5.get();
     std::cout << "Task 5 has completed" << std::endl;
 
     stagefuture::parallel_invoke([]
@@ -174,4 +232,14 @@ int main(int argc, char *argv[])
         return x + y;
     });
     std::cout << "The sum of {1, 2, 3, 4} is " << r << std::endl;
+}
+int main(int argc, char *argv[])
+{
+    testRunAsync();
+    testSupplyAsync();
+    testThenAccept();
+    testThenApply();
+    testThenCompose();
+    testThenCombine();
+    testOther();
 }
