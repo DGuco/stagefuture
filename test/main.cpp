@@ -9,6 +9,8 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <future>
+#include <thread>
 
 struct A
 {              // abstract class
@@ -215,5 +217,11 @@ int main()
         printf("hello word!\n");
     };
     func();
+    std::future<int>
+        future = std::async([]() -> int
+                            {
+                                printf("hello word!\n");
+                                return 0;
+                            });
     return 0;
 }

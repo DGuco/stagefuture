@@ -37,7 +37,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 # Add all source and header files so IDEs can see them
 set(STAGE_FUTURE_INCLUDE
         ${PROJECT_SOURCE_DIR}/include/stagefuture/aligned_alloc.h
-        ${PROJECT_SOURCE_DIR}/include/stagefuture/cancel.h
         ${PROJECT_SOURCE_DIR}/include/stagefuture/continuation_vector.h
         ${PROJECT_SOURCE_DIR}/include/stagefuture/parallel_for.h
         ${PROJECT_SOURCE_DIR}/include/stagefuture/parallel_invoke.h

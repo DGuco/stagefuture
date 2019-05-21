@@ -143,7 +143,6 @@ class event_event;
 #include "stagefuture/scheduler.h"
 #include "stagefuture/stage_future.h"
 #include "stagefuture/when_all_any.h"
-#include "stagefuture/cancel.h"
 #include "stagefuture/range.h"
 #include "stagefuture/partitioner.h"
 #include "stagefuture/parallel_invoke.h"
