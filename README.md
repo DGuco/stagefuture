@@ -1,5 +1,5 @@
 # stagefuture
-- stagefuture 基于c++11的可串行并行的future类（修改中），参考以下项目。<br>
+- stagefuture 基于c++11的可串行并行的future类，参考以下项目。<br>
   [项目地址](https://github.com/Amanieu/asyncplusplus)，修改其部分实现，参考java CompletableFuture类重写其api
 # 测试示例:初版  
 - 测试环境 ubuntu 12.04 g++ 版本 6.2.0 clion 2017
