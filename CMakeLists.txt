@@ -21,7 +21,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(stagefuture C CXX)
 add_subdirectory(examples)
-add_subdirectory(test)
 
 option(BUILD_SHARED_LIBS "Build stagefuture as a shared library" ON)
 option(USE_CXX_EXCEPTIONS "Enable C++ exception support" ON)
