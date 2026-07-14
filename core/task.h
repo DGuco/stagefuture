@@ -1,0 +1,685 @@
+/*****************************************************************
+* FileName:thread_task.h
+* Summary :
+* Date	  :2024-7-10
+* Author  :DGuco(1139140929@qq.com)
+******************************************************************/
+#ifndef __THREAD_TASK_H__
+#define __THREAD_TASK_H__
+#include <functional>
+#include <type_traits>
+#include <string>
+#include <tuple>
+#include <memory>
+#include <atomic>
+#include <queue>
+#include "my_thread.h"
+#include "log.h"
+#include "t_array.h"
+
+using namespace my_std;
+
+class CTaskScheduler;
+typedef std::shared_ptr<CTask> TaskPtr;
+typedef std::weak_ptr<CTask> WeakTaskPtr;
+
+enum class enTaskState : unsigned char
+{
+	eTaskInit = 0,
+	eTaskWaitingFoDoing = 1,
+	eTaskDoing = 2,
+	eTaskDone = 3,
+	eTaskFailed = 4,
+};
+
+enum class enCombineType : unsigned char
+{
+	eCombineNone = 0,
+	eCombineAll = 1,
+	eCombineAny = 2,
+};
+
+// 首先定义一个辅助traits模板来检查所有类型是否相同
+template<typename... Args> struct are_all_same;
+
+// 基本情况：单个类型总是返回true
+template<typename T> struct are_all_same<T> : std::true_type {};
+
+// 递归情况：检查第一个和第二个类型是否相同，然后递归检查剩余类型
+template<typename T, typename U, typename... Rest>
+struct are_all_same<T, U, Rest...> : 
+	std::integral_constant<bool, std::is_same<T, U>::value && are_all_same<T, Rest...>::value> {};
+
+/*
+MakeIndexSequence<5> : public MakeIndexSequence<4,4>
+MakeIndexSequence<4,4> : public MakeIndexSequence<3,3,4>
+MakeIndexSequence<3,3,4> : public MakeIndexSequence<2,2,3,4>
+MakeIndexSequence<2,2,3,4> : public MakeIndexSequence<1,1,2,3,4>
+MakeIndexSequence<1,1,2,3,4> : public MakeIndexSequence<0,0,1,2,3,4>
+MakeIndexSequence<0,0,1,2,3,4> : public IndexSequence<0,1,2,3,4>
+IndexSequence<0,1,2,3,4> 
+*/
+template <size_t... Ints>
+struct IndexSequence { using type = IndexSequence; };
+
+template <size_t N, size_t... Ints>
+struct MakeIndexSequence : MakeIndexSequence<N-1, N-1, Ints...> {};
+
+template <size_t... Ints>
+struct MakeIndexSequence<0, Ints...> : IndexSequence<Ints...> {};
+
+template<size_t NUM_PARAMS, typename return_type, typename... Args>
+struct TaskCaller
+{
+	using function_type = typename std::function<return_type(Args...)>;
+public:
+	/**
+	 不是通用引用：function_type&& 是具体类型的右值引用，不是通用引用（T&&），
+	 所以 std::forward<function_type> 在这里没有意义,不需要完美转发
+	 */
+	static return_type invoke(function_type& func, std::tuple<Args...>& args) 
+	{
+		using Indices = typename MakeIndexSequence<sizeof...(Args)>::type;
+		return invokeImpl(func, args, Indices());
+	}
+
+	template <size_t... Indices>
+	static return_type invokeImpl(function_type& func, std::tuple<Args...>& args, IndexSequence<Indices...>) 
+	{
+		return func(std::get<Indices>(args)...);
+	}
+};
+
+template<typename return_type>
+struct TaskCaller<0, return_type>
+{
+	using function_type = typename std::function<return_type()>;
+public:
+	static return_type invoke(function_type& func)
+	{
+		return func();
+	}
+};
+
+template<typename return_type, typename Arg>
+struct TaskCaller<1, return_type, Arg>
+{
+	using function_type = typename std::function<return_type(Arg)>;
+public:
+	static return_type invoke(function_type& func, Arg& arg)
+	{
+		return func(arg);
+	}
+};
+
+// template<typename return_type, typename... Args>
+// struct TaskCaller<2, return_type, Args...>
+// {
+//     using function_type = typename std::function<return_type(Args...)>;
+// public:
+//     static return_type invoke(function_type func, std::tuple<Args...>& args)
+//     {
+//         return func(std::get<0>(args),
+//             std::get<1>(args));
+//     }
+// };
+
+
+class IArgsTypeInfo;
+class CTask : public enable_shared_from_this<CTask>
+{
+	friend class CTaskScheduler;
+public:
+	CTask(CSafePtr<CTaskScheduler> scheduler, std::string signature);
+	virtual ~CTask();
+	time_t GetStartTime()						{ return m_nExecuteStart; }
+	const std::string& GetSignature()			{ return m_TaskSignature; }
+	TaskPtr GetShared()							{ return shared_from_this(); }
+	CSafePtr<CTaskScheduler>   GetScheduler()   { return m_pScheduler; }
+	//对原子变量y进行了release的store操作，因此y变量之前的store/load操作不能排序到y之后
+	//对原子变量y进行acquire的load操作，因此变量y之后的store/load操作不能排序到y之前
+	enTaskState GetState()						{ return m_nState.load(std::memory_order_acquire); }
+	//添加子任务
+	void AddChildTask(TaskPtr pTask);
+	//执行子任务
+	void RunChildTask();
+	//设置任务开始执行时间
+	void SetStartTime(time_t time)				{ m_nExecuteStart = time; }
+	//设置任务执行状态
+	void SetState(enTaskState state)			{ m_nState.store(state, std::memory_order_release);}
+	//任务执行完成
+	virtual void OnFinish();
+	//任务执行失败
+	virtual void OnFailed();
+	//任务执行
+	void Run();
+	//设置任务是否接受组合任务的参数
+	void SetAcceptCombineInfo(CSafePtr<IArgsTypeInfo> pArgs);
+	//填充组合任务的参数
+	void FillCombineTaskArgs(TaskPtr pChildTask);
+public:
+	//任务执行
+	virtual void  Execute() = 0;
+	//执行子任务
+	virtual void  ExecuteChildTask(TaskPtr pChildTask) = 0;
+	//从父任务执行
+	virtual void  ExecuteFromParent(void* pRes,bool sucess = true) = 0;
+	//获取任务执行结果
+	virtual void* GetRes() = 0;
+public:
+	//获取任务执行参数
+	virtual void* GetCombinedArgsTuple() {return NULL;};
+	//组合类型
+	virtual enCombineType  CombinedType() {return enCombineType::eCombineNone;}
+	//组合任务执行完成
+	virtual void  CombineTaskDone(TaskPtr pParentTask)  {ASSERT_EX(false,"NOT Combinetask call CombineTaskDone illegal");}
+	//设置组合任务的子任务
+	virtual void  SetCombineTask(int index,TaskPtr pTask) {ASSERT_EX(false,"NOT Combinetask call SetCombineTask illegal");}
+protected:
+	CMyLock								m_childTaskLock;
+	std::string							m_TaskSignature;	//任务签名
+	time_t								m_nExecuteStart;	//任务开始执行时间
+	//任务执行完成后，需要执行的后续子任务
+	std::queue<TaskPtr>					m_childTaskQueue;
+	//当前任务的执行状态
+	std::atomic<enTaskState>			m_nState;
+	//如果当前任务是一组合任务的前置任务，保存作为前置任务的参数的位置信息
+	CSafePtr<IArgsTypeInfo>				m_pArgsTypeList;
+	CSafePtr<CTaskScheduler>			m_pScheduler;
+};
+
+template<int combine_count>
+class CCombineTask : public CTask
+{
+public:
+	CCombineTask(CSafePtr<CTaskScheduler> scheduler, 
+					std::string signature,
+					enCombineType combineType = enCombineType::eCombineAll)
+		: CTask(scheduler, signature)
+	{
+		m_combineDone = 0;
+		m_combineType = combineType;
+	}
+	
+	virtual ~CCombineTask()
+	{}
+
+	virtual void OnFinish()
+	{
+		SetState(enTaskState::eTaskDone);
+		RunChildTask();
+	}
+
+	virtual void OnFailed() 
+	{
+		SetState(enTaskState::eTaskFailed);
+		RunChildTask();
+		CACHE_LOG(ERROR_CACHE, "Task[{}] execute failed", m_TaskSignature);
+	}
+
+	virtual void  SetCombineTask(int index,TaskPtr pTask)
+	{
+		// CSafeLock lock(m_combineLock);
+		// if(index >= 0 && index < combine_count)
+		// {
+		// 	if(m_pCombineTask[index].lock() == NULL)
+		// 	{
+		// 		m_pCombineTask[index] = pTask;
+		// 	}else
+		// 	{
+		// 		ASSERT_EX(false,"SetCombineTask index has set");
+		// 	}
+		// }else
+		// {
+		// 	ASSERT_EX(false,"SetCombineTask index overflow");
+		// }
+	}
+	
+	virtual void CombineTaskDone(TaskPtr pParentTask)
+	{
+		//前置任务执行失败了
+		if(pParentTask->GetState() == enTaskState::eTaskFailed)
+		{
+			OnFailed();
+			return;
+		}
+
+		enTaskState bState = GetState();
+		//其中有一个前置任务失败了，后续的不用执行了
+		if (bState == enTaskState::eTaskFailed)
+		{
+			return;
+		}
+		
+		//增加任务完成数量之前先把前置任务的返回值写到子任务的参数列表中
+		pParentTask->FillCombineTaskArgs(GetShared());
+
+		// fetch_add(1) 保证原子性递增
+		const int oldValue = m_combineDone.fetch_add(1, std::memory_order_acq_rel);
+		const int newValue = oldValue + 1;
+		if(m_combineType == enCombineType::eCombineAll)
+		{
+			// 修改判断条件为严格相等
+			if (newValue == combine_count) 
+			{
+				Run();
+			}
+		}
+		else if(m_combineType == enCombineType::eCombineAny)
+		{
+			//任意一个前置任务完成了，后续的不用执行了
+			if (newValue == 1)
+			{
+				pParentTask->ExecuteChildTask(GetShared());
+			}
+			// else
+			// {
+			// 	int aaa = 0;
+			// }
+		}
+	}
+
+public:
+	virtual enCombineType  CombinedType() {return m_combineType;}
+private:
+	//combine info
+	//CMyLock								m_combineLock;
+	//前置任务列表
+	//TArray<WeakTaskPtr,combine_count>	m_pCombineTask;
+	//如果当前任务是一组合并任务的后续子任务，前置任务已完成的数量
+	std::atomic_int						m_combineDone;
+	//合并类型
+	enCombineType						m_combineType;
+};
+
+template<>
+class CCombineTask<0> : public CTask
+{
+public:
+	CCombineTask(CSafePtr<CTaskScheduler> scheduler,
+					std::string signature,
+					enCombineType combineType = enCombineType::eCombineAll)
+		: CTask(scheduler, signature)
+	{}
+};
+
+template<int combine_count,class Func, class...Args>
+class CWithReturnTask : public CCombineTask<combine_count>
+{
+	enum
+	{
+		//参数个数
+		arity = sizeof...(Args)
+	};
+	using ArgsTubleType = typename std::tuple<Args...>;
+	using return_type = typename std::result_of<Func(Args...)>::type;
+	using function_type = typename std::function<return_type(Args...)>;
+	//每个参数的类型
+	template<size_t I>
+	struct args
+	{
+		static_assert(I < arity, "index is out of range, index must less than sizeof Args");
+		using type = typename std::tuple_element<I, ArgsTubleType>::type;
+	};
+public:
+	CWithReturnTask(CSafePtr<CTaskScheduler> scheduler,
+		std::string signature,
+		Func&& func,
+		enCombineType combineType = enCombineType::eCombineAll)
+		: CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+	virtual ~CWithReturnTask()
+	{}
+	virtual void Execute()
+	{
+		m_Res = TaskCaller<arity, return_type, Args...>::invoke(m_Func, m_ArgTuple);
+	}
+
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent((void*)(&m_Res));
+		}
+		else
+		{
+			pChildTask->ExecuteFromParent(NULL, false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes, bool sucess = true)
+	{
+		//多参数任务不会从父任务接收参数，这里只有一个参数的任务会从父任务执行
+		ASSERT_EX(false, "<class Func, class...Args>CWithReturnTask can not ExecuteFromParent");
+	}
+
+	virtual void* GetRes()
+	{
+		return (void*)(&m_Res);
+	}
+	virtual void* GetCombinedArgsTuple()
+	{
+		return (void*)(&m_ArgTuple);
+	}
+
+	virtual void  FillCombineTaskArgs(TaskPtr pChildTask)
+	{
+		this->m_pCombinedArgs->FillWaitTaskParm(this->GetShared(),pChildTask);
+	}
+
+private:
+	function_type				m_Func;
+	ArgsTubleType				m_ArgTuple;
+	return_type					m_Res;
+};
+
+template<int combine_count,class Func, typename Par>
+class CWithReturnTask<combine_count,Func,Par> : public CCombineTask<combine_count>
+{
+	using return_type = typename std::result_of<Func(Par)>::type;
+	using function_type = typename std::function<return_type(Par)>;
+public:
+	CWithReturnTask(CSafePtr<CTaskScheduler> scheduler,
+		std::string signature,
+		Func&& func,
+		enCombineType combineType = enCombineType::eCombineAll)
+		: CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+	virtual ~CWithReturnTask()
+	{}
+	virtual void Execute()
+	{
+		m_Res = TaskCaller<1,return_type,Par>::invoke(m_Func, m_Param);
+	}
+
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent((void*)(&m_Res));
+		}else
+		{
+			pChildTask->ExecuteFromParent(NULL,false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes,bool sucess = true)
+	{
+		if (pRes != NULL && sucess)
+		{
+			m_Param = *(Par*)(pRes);
+			this->Run();
+		}
+		else
+		{
+			this->OnFailed();
+		}
+	}
+
+	virtual void* GetRes()
+	{
+		return (void*)(&m_Res);
+	}
+
+	virtual void* GetCombinedArgsTuple()
+	{
+		return NULL;
+	}
+
+private:
+	function_type				m_Func;
+	return_type					m_Res;
+	Par							m_Param;
+};
+
+template<int combine_count,class Func>
+class CWithReturnTask<combine_count,Func,void> : public CCombineTask<combine_count>
+{
+	using return_type = typename std::result_of<Func()>::type;
+	using function_type = typename std::function<return_type()>;
+public:
+	CWithReturnTask(CSafePtr<CTaskScheduler> scheduler,
+					std::string signature,
+					Func&& func,
+					enCombineType combineType = enCombineType::eCombineAll)
+		: CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+
+	virtual ~CWithReturnTask()
+	{}
+	
+	virtual void Execute()
+	{
+		m_Res = TaskCaller<0,return_type>::invoke(m_Func);
+	}
+
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent((void*)(&m_Res));
+		}
+		else
+		{
+			pChildTask->ExecuteFromParent(NULL,false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes, bool sucess = true)
+	{
+		if (sucess)
+		{
+			this->Run();
+		}
+		else
+		{
+			this->OnFailed();
+		}
+	}
+
+	virtual void* GetRes()
+	{
+		return (void*)(&m_Res);
+	}
+
+	virtual void* GetCombinedArgsTuple()
+	{
+		return NULL;
+	}
+
+private:
+	function_type				m_Func;
+	return_type					m_Res;
+};
+
+template<int combine_count,class Func, class...Args>
+class CNoReturnTask : public CCombineTask<combine_count>
+{
+	enum
+	{
+		//参数个数
+		arity = sizeof...(Args)
+	};
+	using ArgsTubleType = typename std::tuple<Args...>;
+	using function_type = typename std::function<void(Args...)>;
+	//每个参数的类型
+	template<size_t I>
+	struct args
+	{
+		static_assert(I < arity, "index is out of range, index must less than sizeof Args");
+		using type = typename std::tuple_element<I, ArgsTubleType>::type;
+	};
+public:
+	CNoReturnTask(CSafePtr<CTaskScheduler> scheduler,
+		std::string signature,
+		Func&& func,
+		enCombineType combineType = enCombineType::eCombineAll)
+		: CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+	virtual ~CNoReturnTask()
+	{}
+	
+	virtual void Execute()
+	{
+		TaskCaller<arity, void, Args...>::invoke(m_Func, m_ArgTuple);
+	}
+
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent(NULL);
+		}
+		else
+		{
+			pChildTask->ExecuteFromParent(NULL, false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes, bool sucess = true)
+	{
+		//多参数任务不会从父任务接收参数，这里只有一个参数的任务会从父任务执行
+		ASSERT_EX(false, "<class Func, class...Args>CNoReturnTask can not ExecuteFromParent");
+	}
+
+	virtual void* GetRes()
+	{
+		return NULL;
+	}
+
+	virtual void* GetCombinedArgsTuple()
+	{
+		return (void*)(&m_ArgTuple);
+	}
+
+private:
+	function_type				m_Func;
+	ArgsTubleType				m_ArgTuple;
+};
+
+template<int combine_count,class Func, typename Par>
+class CNoReturnTask<combine_count,Func,Par> : public CCombineTask<combine_count>
+{
+	using function_type = typename std::function<void(Par)>;
+public:
+	CNoReturnTask(CSafePtr<CTaskScheduler> scheduler,
+		std::string signature,
+		Func&& func,
+		enCombineType combineType = enCombineType::eCombineAll)
+		:CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+	virtual ~CNoReturnTask()
+	{}
+
+	virtual void Execute()
+	{
+		TaskCaller<1,void,Par>::invoke(m_Func,m_Param);
+	}
+	
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent(NULL);
+		}
+		else
+		{
+			pChildTask->ExecuteFromParent(NULL, false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes,bool sucess)
+	{
+		if (pRes != NULL && sucess)
+		{
+			m_Param = *(Par*)(pRes);
+			this->Run();
+		}
+		else
+		{
+			this->OnFailed();
+		}
+	}
+
+	virtual void* GetRes()
+	{
+		return NULL;
+	}
+
+	virtual void* GetCombinedArgsTuple()
+	{
+		return NULL;
+	}
+private:
+	function_type			m_Func;
+	Par						m_Param;
+};
+
+template<int combine_count,class Func>
+class CNoReturnTask<combine_count,Func,void> : public CCombineTask<combine_count>
+{
+	using function_type = typename std::function<void()>;
+public:
+	CNoReturnTask(CSafePtr<CTaskScheduler> scheduler,
+		std::string signature,
+		Func&& func,
+		enCombineType combineType = enCombineType::eCombineAll)
+		:CCombineTask<combine_count>(scheduler, signature, combineType)
+	{
+		m_Func = std::forward<Func>(func);
+	}
+	virtual ~CNoReturnTask()
+	{}
+	virtual void Execute()
+	{
+		TaskCaller<0,void>::invoke(m_Func);
+	}
+
+	virtual void ExecuteChildTask(TaskPtr pChildTask)
+	{
+		if (this->GetState() == enTaskState::eTaskDone)
+		{
+			pChildTask->ExecuteFromParent(NULL);
+		}
+		else
+		{
+			pChildTask->ExecuteFromParent(NULL, false);
+		}
+	}
+
+	virtual void  ExecuteFromParent(void* pRes, bool sucess)
+	{
+		if (sucess)
+		{
+			this->Run();
+		}
+		else
+		{
+			this->OnFailed();
+		}
+	}
+	virtual void* GetRes()
+	{
+		return NULL;
+	}
+
+	virtual void* GetCombinedArgsTuple()
+	{
+		return NULL;
+	}
+	
+private:
+	function_type			m_Func;
+};
+
+#endif //__THREAD_TASK_H__

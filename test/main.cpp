@@ -1,227 +1,187 @@
-//
-// Created by dguco on 19-3-23.
-//
+#ifndef _SCHEDULER_TEST_H_
+#define _SCHEDULER_TEST_H_
 
-#include <iostream>
-#include <functional>
-#include <utility>      // std::declval
-#include <iostream>     // std::cout
-#include <memory>
-#include <map>
-#include <vector>
-#include <future>
-#include <thread>
+#include "task_helper.h"
+#include "thread_scheduler.h"
+#include "t_array.h"
 
-struct A
-{              // abstract class
-    virtual int value() = 0;
-};
+CSafePtr<CThreadScheduler> g_LogicScheduler = new CThreadScheduler("GameLogicScheduler");
+CSafePtr<CThreadScheduler> g_DBScheduler = new CThreadScheduler("DBScheduler");
+CSafePtr<CThreadScheduler> g_HttpScheduler = new CThreadScheduler("DBScheduler");
 
-struct C
+
+#define MAX_TEST_SCHEDULER 10
+#define MAX_TEST_COUNT 10000
+#define MAX_TEST_ANY_COUNT 100
+
+TArray<CSafePtr<CThreadScheduler>,MAX_TEST_SCHEDULER> g_SchedulerList;
+
+
+CSafePtr<CThreadScheduler> RandomScheduler()
 {
-    int a;
-};
-
-class B
-{    // class with specific constructor
-    int val_;
-public:
-    B()
-    {
-        val_ = 0;
-        printf("B default construct\n");
-    }
-    B(int i, int j)
-        : val_(i * j)
-    {
-        printf("B construct,i = %d,j= %d\n", i, j);
-    }
-    B(const B &other)
-    {
-        printf("B copy construct\n");
-        this->val_ = other.val_;
-    }
-    B(const B &&other)
-    {
-        printf("B move construct\n");
-        this->val_ = other.val_;
-    }
-    B &operator=(const B &b)
-    {
-        this->val_ = b.val_;
-        printf("B operator=\n");
-        return *this;
-    };
-
-    int value()
-    { return val_; }
-};
-
-void test()
-{
-    decltype(std::declval<A>().value()) a;  // int a
-    decltype(std::declval<B>().value()) b;  // int b
-    decltype(B(0, 0).value()) c;   // same as above (known constructor)
-    a = b = B(10, 2).value();
-    typedef decltype(std::declval<C>()) type_c;
-    C *ccc = new C;
-    type_c __c = std::move(*ccc);
-    std::cout << a << '\n';
-
-    std::shared_ptr<int> ip1 = std::make_shared<int>(10);
-    int use = ip1.use_count();
-    std::shared_ptr<int> ip2 = ip1;
-    use = ip1.use_count();
-    use = ip2.use_count();
-    std::shared_ptr<int> ip3 = std::move(ip2);
-    use = ip1.use_count();
-    use = ip2.use_count();
-    use = ip3.use_count();
-    ip3.reset();
-    if (ip3) {
-        std::cout << "Ok" << std::endl;
-    }
-    else {
-        std::cout << "failed" << std::endl;
-    }
-};
-
-#define _OFFSET_(_Obj_Ty, _Key)                                                    \
-    ((unsigned long)(&((_Obj_Ty *)0)->_Key))
-
-#define CLASS_REGISTER(_Obj_Ty)                                                    \
-public:                                                                            \
-    static tat_class * get_class_ptr()                                        \
-    {                                                                            \
-        static tat_class __class_##_Obj_Key##__;                            \
-        return &__class_##_Obj_Key##__;                                            \
-    }
-
-#define FIELD_REGISTER(_Access, _Field_Ty, _Field_Key, _Obj_Ty)                    \
-_Access:                                                                        \
-    _Field_Ty _Field_Key;                                                        \
-private:                                                                        \
-    class __field_register_##_Field_Key##__                                        \
-    {                                                                            \
-    public:                                                                        \
-        __field_register_##_Field_Key##__()                                        \
-        {                                                                        \
-            static __field_register__ reg_##_Field_Key(                    \
-                _Obj_Ty::get_class_ptr(),                                        \
-                _OFFSET_(_Obj_Ty,_Field_Key),                                    \
-                #_Field_Key);                                                    \
-        }                                                                        \
-    }_Field_Key##_register;
-
-class tat_field
-{
-private:
-    unsigned long _offset;
-    std::string _key;
-public:
-    tat_field(unsigned long offset, std::string key)
-        : _offset(offset), _key(key)
-    {}
-    tat_field(const tat_field &field)
-    {
-        this->_offset = field._offset;
-        this->_key = field._key;
-    }
-public:
-    template<typename _Obj_Ty, typename _Value_Ty>
-    void get(_Obj_Ty *obj, _Value_Ty &value)
-    {
-        value = *((_Value_Ty *) ((unsigned char *) obj + _offset));
-    }
-    template<typename _Obj_Ty, typename _Value_Ty>
-    void set(_Obj_Ty *obj, const _Value_Ty &value)
-    {
-        *((_Value_Ty *) ((unsigned char *) obj + _offset)) = value;
-    }
-    std::string get_key() const
-    {
-        return this->_key;
-    }
-};
-
-class tat_class
-{
-private:
-    std::map<std::string, tat_field> _field_map;
-    std::string _key;
-public:
-    std::map<std::string, tat_field> get_fields()
-    {
-        return this->_field_map;
-    }
-    tat_field get_field(std::string key)
-    {
-        std::map<std::string, tat_field>::iterator itr = _field_map.find(key);
-        return (*itr).second;
-    }
-    void add_field(const tat_field &field)
-    {
-        _field_map.insert(std::pair<std::string, tat_field>(field.get_key(), field));
-    }
-};
-
-class __field_register__
-{
-public:
-    __field_register__(tat_class *class_ptr, unsigned long offset, std::string key)
-    {
-        tat_field field(offset, key);
-        class_ptr->add_field(field);
-    }
-};
-
-class TestClass
-{
-public:
-    TestClass() = default;
-    ~TestClass() = default;
-
-CLASS_REGISTER(TestClass)
-FIELD_REGISTER(public, long, _long_f, TestClass)
-FIELD_REGISTER(public, int, _int_f, TestClass)
-FIELD_REGISTER(public, std::string, _str_f, TestClass)
-FIELD_REGISTER(public, std::vector<int>, _vec_f, TestClass)
-};
-
-void testReflection()
-{
-    TestClass inst;
-
-    tat_class *test_class = TestClass::get_class_ptr();
-    std::map<std::string, tat_field> field_map = test_class->get_fields();
-
-
-    for (auto &var : field_map) {
-        std::cout << var.first << std::endl;
-    }
-
-    tat_field test_vec_field = field_map.find("_vec_f")->second;
-    std::vector<int> vec;
-    test_vec_field.get(&inst, vec);
-    vec.push_back(22);
-    test_vec_field.set(&inst, vec);
-    std::cout << inst._vec_f[0] << std::endl;
+	int index = rand() % MAX_TEST_SCHEDULER;
+	return g_SchedulerList[index];
 }
 
-int main()
+
+CTaskHelper<int> test_scheduler_task(int value = 0)
 {
-    test();
-    testReflection();
-    std::function<void(void)> func = []() -> void
-    {
-        printf("hello word!\n");
-    };
-    func();
-    std::future<int>
-        future = std::async([]() -> int
-                            {
-                                printf("hello word!\n");
-                                return 0;
-                            });
-    return 0;
+	return RandomScheduler()->Schedule("test_scheduler_task", 
+	[value]
+	{
+		int ret = value;
+		ret++;
+		return ret; //1
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value; //2
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//3
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//4
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//5
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//6
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//7
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//8
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;
+		return value;//9
+	}).ThenAccept(RandomScheduler(),[](int value)
+	{
+		value++;//10
+		return value;
+	});
 }
+
+void schedler_test()
+{
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		CSafePtr<CThreadScheduler> pScheduler = new CThreadScheduler("TestScheduler");
+		g_SchedulerList[i] = pScheduler;
+	}
+
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		if (!g_SchedulerList[i]->Init(2))
+		{
+			return;
+		}
+	}
+
+	std::atomic<int> count(0);
+	std::atomic<int> count_ok(0);
+	for (int index = 0; index < MAX_TEST_COUNT; index++)
+	{
+		auto task1 = test_scheduler_task();
+		auto task2 = test_scheduler_task();
+		auto task3 = test_scheduler_task();
+		auto task4 = test_scheduler_task();
+		auto task5 = test_scheduler_task();
+		auto task6 = test_scheduler_task();
+		auto task7 = test_scheduler_task();
+		auto task8 = test_scheduler_task();
+		auto task9 = test_scheduler_task();
+		auto task10 = test_scheduler_task();
+		CTaskScheduler::AcceptAllCombine(task1,task2,task3,task4,task5,task6,task7,task8,task9,task10)
+			.AcceptAll(RandomScheduler(),
+			[&count,&count_ok,index](int value1,int value2,int value3,int value4,int value5,int value6,int value7,int value8,int value9,int value10)
+			{
+				int sum = value1 + value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9 + value10;
+				if(sum == 100)
+				{
+					count_ok++;
+				}else
+				{
+					CACHE_LOG(DEBUG_CACHE, "index = {} sum = {}",index,sum);
+				}
+				count++;
+
+				//每执行1000个任务，打印一次日志
+				if(count % 1000 == 0)
+				{
+					CACHE_LOG(DEBUG_CACHE, "index = {} count = {} count_ok = {}",index,count,count_ok);
+				}
+
+				if(count == MAX_TEST_COUNT + MAX_TEST_ANY_COUNT)
+				{
+					for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+					{
+						g_SchedulerList[i]->StopScheduler();
+					}
+				}
+			});
+		
+		CTimeHelper::GetSingletonPtr()->SetTime();
+		for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+		{
+			g_SchedulerList[i]->DebugTask();
+		}
+	}
+
+	for (int index = 0; index < MAX_TEST_ANY_COUNT; index++)
+	{
+		auto task1 = test_scheduler_task(index * 10);
+		auto task2 = test_scheduler_task(index * 10);
+		auto task3 = test_scheduler_task(index * 10);
+		auto task4 = test_scheduler_task(index * 10);
+		auto task5 = test_scheduler_task(index * 10);
+		auto task6 = test_scheduler_task(index * 10);
+		auto task7 = test_scheduler_task(index * 10);
+		auto task8 = test_scheduler_task(index * 10);
+		auto task9 = test_scheduler_task(index * 10);
+		auto task10 = test_scheduler_task(index * 10);
+		CTaskScheduler::AcceptAnyCombine(task1,task2,task3,task4,task5,task6,task7,task8,task9,task10)
+			.AcceptAny(RandomScheduler(),
+			[&count,&count_ok,index](int value)
+			{
+				CACHE_LOG(DEBUG_CACHE, "AcceptAny test  index = {} value = {}",index,value);
+				count++;
+				if(count == MAX_TEST_COUNT + MAX_TEST_ANY_COUNT)
+				{
+					for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+					{
+						g_SchedulerList[i]->StopScheduler();
+					}
+				}
+			});
+
+		CTimeHelper::GetSingletonPtr()->SetTime();
+		for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+		{
+			g_SchedulerList[i]->DebugTask();
+		}
+	}
+
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		g_SchedulerList[i]->Join();
+	}
+
+	CACHE_LOG(DEBUG_CACHE, "testcount = {} count_ok = {}",count,count_ok);
+}
+
+void main()
+{
+	schedler_test();
+    getchar();
+}
+#endif

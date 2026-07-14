@@ -1,0 +1,38 @@
+*.xml
+*.class
+*.log
+*.xml
+*.log
+*.idea
+*.logs
+log
+enc_temp_folder
+out
+build
+build_linux
+cmake-build-debug
+/cmake-build-debug/*
+/.vs/*
+/lib/framework.lib
+/lib/libframework.a
+/lib/lua.lib
+/lib/liblua.a
+/lib/Debug
+/lib/*.pdb
+/run/*.exe
+/run/*.exe.*
+/run/*.ilk
+/run/*.pdb
+/run/*.dll
+/run/*.lib
+/run/Debug/*
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
