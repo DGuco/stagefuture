@@ -1,13 +1,18 @@
 cmake_minimum_required(VERSION 3.6)
 project(stagefuture)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/run)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/run)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/run)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}/run)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/run)
 
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
     set(CMAKE_C_COMPILER gcc)
     set(CMAKE_CXX_COMPILER g++)
     add_compile_options(-g -std=c++11 -O2 -fPIC -Wall -pipe -rdynamic -fno-omit-frame-pointer -ldl)
 endif()
+
+add_definitions(-D__WINDOWS__ -D_DEBUG_)
 
 # 仅对 Visual Studio 编译器生效
 if(MSVC)
@@ -16,6 +21,7 @@ if(MSVC)
 endif()
 
 set(SOURCE_FILES
+    "test/Scene.h"
     "test/main.cpp" )
 
 file(GLOB_RECURSE FRAMEWORK_HEADER_FILES 

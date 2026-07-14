@@ -45,28 +45,21 @@ void CTask::OnFailed()
 {
 	SetState(enTaskState::eTaskFailed);
 	RunChildTask();
-	CACHE_LOG(DEBUG_CACHE, "Task[{}] execute failed", m_TaskSignature);
+	CACHE_LOG(THREAD_ERROR, "Task[{}] execute failed", m_TaskSignature);
 }
 
 void CTask::Run()
 {
 	try
 	{
-		//如果就在当前的执行shcheler中，直接执行
-		if(g_thread_data.own_scheduler == m_pScheduler)
-		{
-			SetState(enTaskState::eTaskDoing);
-			SetStartTime(CTimeHelper::GetSingletonPtr()->GetMSTime());
-			Execute();
-			OnFinish();
-		}else//不在当前的执行shcheler中，push到对应scheduler的队列中
-		{
-			m_pScheduler->PushTask(GetShared());
-		}
+		SetState(enTaskState::eTaskDoing);
+		SetStartTime(CTimeHelper::GetSingletonPtr()->GetMSTime());
+		Execute();
+		OnFinish();
 	}
 	catch (std::exception& e)
 	{
-		CACHE_LOG(ERROR_CACHE, "Task[{}] caught exception,exception msg:{}",m_TaskSignature,e.what());
+		CACHE_LOG(THREAD_ERROR, "Task[{}] caught exception,exception msg:{}",m_TaskSignature,e.what());
 		OnFailed();
 	}
 }

@@ -214,7 +214,7 @@ public:
 	{
 		SetState(enTaskState::eTaskFailed);
 		RunChildTask();
-		CACHE_LOG(ERROR_CACHE, "Task[{}] execute failed", m_TaskSignature);
+		CACHE_LOG(THREAD_ERROR, "Task[{}] execute failed", m_TaskSignature);
 	}
 
 	virtual void  SetCombineTask(int index,TaskPtr pTask)
@@ -262,7 +262,7 @@ public:
 			// 修改判断条件为严格相等
 			if (newValue == combine_count) 
 			{
-				Run();
+				m_pScheduler->PushTask(GetShared());
 			}
 		}
 		else if(m_combineType == enCombineType::eCombineAny)
@@ -412,7 +412,7 @@ public:
 		if (pRes != NULL && sucess)
 		{
 			m_Param = *(Par*)(pRes);
-			this->Run();
+			m_pScheduler->PushTask(GetShared());
 		}
 		else
 		{
@@ -475,7 +475,7 @@ public:
 	{
 		if (sucess)
 		{
-			this->Run();
+			m_pScheduler->PushTask(GetShared());
 		}
 		else
 		{
@@ -603,7 +603,7 @@ public:
 		if (pRes != NULL && sucess)
 		{
 			m_Param = *(Par*)(pRes);
-			this->Run();
+			m_pScheduler->PushTask(GetShared());
 		}
 		else
 		{
@@ -661,7 +661,7 @@ public:
 	{
 		if (sucess)
 		{
-			this->Run();
+			m_pScheduler->PushTask(GetShared());
 		}
 		else
 		{

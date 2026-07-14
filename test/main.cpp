@@ -4,6 +4,7 @@
 #include "task_helper.h"
 #include "thread_scheduler.h"
 #include "t_array.h"
+#include "Scene.h"
 
 CSafePtr<CThreadScheduler> g_LogicScheduler = new CThreadScheduler("GameLogicScheduler");
 CSafePtr<CThreadScheduler> g_DBScheduler = new CThreadScheduler("DBScheduler");
@@ -179,9 +180,134 @@ void schedler_test()
 	CACHE_LOG(DEBUG_CACHE, "testcount = {} count_ok = {}",count,count_ok);
 }
 
+TArray<CSafePtr<CThreadScheduler>,MAX_TEST_SCHEDULER> g_SceneSchedulerList;
+TArray<Scene*,MAX_TEST_SCHEDULER> g_SceneObjList;
+
+void scene_tick_task(void* scene)
+{
+	((Scene*)scene)->Tick();
+}
+
+CSafePtr<Scene> RandomScene()
+{
+	int index = rand() % MAX_TEST_SCHEDULER;
+	return g_SceneObjList[index];
+}
+
+
+void scene_test()
+{
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		CSafePtr<CThreadScheduler> pScheduler = new CThreadScheduler("TestScheduler");
+		g_SceneSchedulerList[i] = pScheduler;
+		g_SceneObjList[i] = new Scene();
+	}
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		if (!g_SceneSchedulerList[i]->Init(1,NULL,scene_tick_task,(void**)&g_SceneObjList[i],(void**)&g_SceneObjList[i]))
+		{
+			return;
+		}
+	}
+
+
+	CSafePtr<Scene> randomScene[10] = {NULL};
+	for (size_t i = 0; i < 10; i++)
+	{
+		randomScene[i] = RandomScene();
+	}
+
+	int humid = 0;
+	int nScore = 10;
+	randomScene[0]->Schedule("test_scheduler_task", 
+	[scene = randomScene[0]]() mutable
+	{
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(1);
+		return pHuman->AddScore();
+	}).ThenAccept(randomScene[1],
+	  [scene = randomScene[1]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(2);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[2],
+	  [scene = randomScene[2]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(3);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[3],
+	  [scene = randomScene[3]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(4);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[4],
+	  [scene = randomScene[4]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(5);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[5],
+	  [scene = randomScene[5]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(6);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[6],
+	  [scene = randomScene[6]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(7);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[7],
+	  [scene = randomScene[7]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(8);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[8],
+	  [scene = randomScene[8]](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(9);
+		score++;
+		pHuman->SetScore(score);
+		return pHuman->GetScore();
+	}).ThenAccept(randomScene[9],
+	  [scene = randomScene[9],&nScore](int score)
+	  {
+		Obj_Human* pHuman = scene->GetHumanObjInSceneByGUID(10);
+		score++;
+		pHuman->SetScore(score);
+		nScore = score;
+		for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+		{
+			g_SceneSchedulerList[i]->StopScheduler();
+		}
+
+		CACHE_LOG(DEBUG_CACHE, "scene_test score = {}",nScore);
+	});
+
+	for (size_t i = 0; i < MAX_TEST_SCHEDULER; i++)
+	{
+		g_SceneSchedulerList[i]->Join();
+	}
+
+	CACHE_LOG(DEBUG_CACHE, "scene_test done score = {}",nScore);
+}
+
 void main()
 {
-	schedler_test();
+	//schedler_test();
+	scene_test();
     getchar();
 }
 #endif

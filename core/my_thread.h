@@ -24,7 +24,17 @@ struct thread_data
 {
 	std::tm 						m_CacheTime;	
 	TimePoint						m_CacheTimePoint;
-	CSafePtr<CTaskScheduler>		own_scheduler;
+    TID                             m_OwnerThreadID;
+	
+	thread_data() : m_OwnerThreadID(0) {}
+    TID getOwnerThreadID() 
+    {
+        if(m_OwnerThreadID == 0)
+        {
+            m_OwnerThreadID = MyGetCurrentThreadID();
+        }
+        return m_OwnerThreadID;
+    }
 };
 
 typedef std::function<void(void*)> ThreadFuncParam;

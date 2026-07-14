@@ -11,7 +11,6 @@ CTaskThread::~CTaskThread()
 
 bool CTaskThread::PrepareToRun()
 {
-	g_thread_data.own_scheduler = m_pScheduler;
 	m_funcInit();
 	return true;
 }

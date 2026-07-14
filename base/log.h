@@ -24,6 +24,7 @@ enum enCacheLog
 {
 	DEBUG_CACHE = 0,
 	ERROR_CACHE = 1,
+	THREAD_ERROR = 2,
 	CACHE_LOG_MAX,
 };
 
@@ -38,6 +39,7 @@ static std::pair<int, std::string> g_CacheLogFile[] =
 {
 	{enCacheLog::DEBUG_CACHE,"debug"},
 	{enCacheLog::ERROR_CACHE,"error"},
+	{enCacheLog::THREAD_ERROR,"thread_error"},
 };
 
 namespace detail_log {
